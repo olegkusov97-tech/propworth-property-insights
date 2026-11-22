@@ -75,3 +75,10 @@
 ## Restore full Buyer liquidity
 - [x] Restore all listing analysis with stable, varied fallback simulations and explicit disclosures.
 - [x] Verify charts, real DLD references, saving and buying without changing other journeys.
+
+
+## Current documentation and mobile market activity
+- [x] Refine metric cards into a consistent two-column mobile grid and retain chart interactions and values.
+- [x] Verify mobile layout, time-range selection and existing model tests.
+- [x] Replace the original project brief with current journeys, data limitations, development and Git sync documentation.
+- [x] Document active routes and removed Markets/comparison pages; commit documentation for repository sync.

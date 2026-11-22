@@ -1,86 +1,75 @@
-# PropWorth Property Insights
+# Property Liquidity by Property Finder
 
-I want to build a mobile-first prototype for Property Finder called PropWorth.
+A mobile-first prototype for exploring how easily a home could sell, with separate homeowner and buyer journeys. Built with [Lovable](https://lovable.dev/projects/bc2152e4-ca77-4c37-b305-5a4389e2d319).
 
-The product is designed for two different types of users with different problems and different user journeys. These should be treated as two separate scenarios within the same product, not as one shared flow.
+## Current experience
 
-Scenario 1: Existing Homeowners
+### Homeowners
+- Select or import a property through the demo onboarding flow and confirm its details.
+- Explore estimated value, Property Liquidity Score, comparison with similar homes, buyer demand, supply competition and monthly changes.
+- Switch properties without overwriting retained property details or closed monthly snapshots.
+- Open the [Property Finder home-value estimator](https://www.propertyfinder.ae/en/tools/home-value-estimator) in a new tab.
+- Use the selling demo to prepare a listing draft or select a sample agent. Nothing is published and no agent is contacted.
 
-These are people who already own a property in the UAE.
+### Buyers
+- Enter directly into historical property search, defaulting to Dubai, residential properties and Ready status.
+- Search, filter, sort and paginate the full uploaded Bayut catalog; other available configurations remain accessible through filters.
+- Open individual property details with liquidity scores, similar-property benchmarks, demand, competition, activity, history and matching transaction references.
+- Save properties to a device-local watchlist.
+- Try the viewing or offer demo, then mark a property as purchased and review it in the homeowner flow. Actual unit size is required before confirmation.
 
-Their main problem is that they may know the estimated market value of their property, but they don't know how liquid it is, how strong buyer demand is, or how likely they are to sell it at a particular price.
+There is no standalone Markets page or selected-listing comparison page. Similar-property and market benchmarks remain inside individual property analysis.
 
-For these users, I want to build a property liquidity dashboard that shows:
+## Market activity and presentation
 
-Estimated property value
+“What’s happening in your market?” retains the comparison segment and five selectable metrics: Buyer Searches, Property Saves, Enquiries, Active Similar Listings and Comparable Sales. Cards use an evenly spaced two-column grid, with the final card spanning the full width. Icons, labels, muted periods and values follow a consistent hierarchy. Selecting a card updates the shared chart; 6M / 12M controls and month selection remain interactive.
 
-Buyer demand for similar properties
+Searches, saves and enquiries are monthly figures; active listings are month-end figures; comparable sales use a rolling 90-day period. Liquidity History uses teal for Your Property and orange for Similar Properties, with matching legends.
 
-Competition from other properties for sale
+The shared design uses Open Sans, semantic CSS tokens and a compact sticky header. Back reverses active journey steps before navigating through history. Buyer search filters, sorting and pagination are represented in the URL.
 
-Liquidity Score
+## Data and limitations
 
-Indicative probability of selling within 90 days
+- **Listings:** `bayut_selling_properties.csv` supplies the full 41,381-record historical catalog, covering 2021–2024. Advertised asking prices are not completed sale prices, and listings are not confirmed currently available.
+- **Transactions:** `transactions-2026-11-22.csv` supplies uploaded DLD transaction references. The retained reference subset is matched conservatively by available property characteristics. These records are user-supplied and not independently verified.
+- **Simulations:** valuations, liquidity, demand, competition and activity snapshots are illustrative and unvalidated, not predictions. Real transaction references stay separate from simulated model inputs.
+- **Incomplete benchmarks:** Buyer listings retain the full analysis using stable, property-specific illustrative simulations when matching benchmarks are insufficient.
+- **Missing details:** missing unit size is not inferred from building area. Available source addresses, property types and characteristics are retained.
+- **Demo actions:** viewing requests, offers, purchases, agent requests and listing preparation do not submit real enquiries, payments or transactions. Contact details remain in session memory and are not sent or persisted.
 
-How these indicators change over time
+Owner details, drafts, retained homes, monthly snapshots and saved Buyer properties are stored locally on the device. This prototype has no connected login or shared database. Photo previews use temporary object URLs.
 
-The goal is to help homeowners understand how easily they could sell their property and give them a reason to return regularly.
+## Technical structure
 
-Scenario 2: Renters and Potential Buyers
+- React 19 and TanStack Start with file-based TanStack Router routes.
+- Tailwind CSS v4 and shared design-system controls.
+- `src/components/pw/`: journey UI, shared navigation and interactive charts.
+- `src/lib/`: property models, Buyer adapters, browser storage and reference matching.
+- `src/assets/`: asset pointers, including the immutable full historical catalog.
+- `src/data/`: compact reference datasets.
+- `src/test/`: model, data-matching, navigation and routing tests.
 
-These are people who currently rent in the UAE and are considering buying their first property.
+The Buyer layout loads the full historical catalog client-side through the Query cache rather than embedding it in source bundles. See [route documentation](src/routes/README.md) and [project rules](AGENTS.md) for conventions.
 
-Their problem is different. They are not trying to sell a property. They want to understand what they can afford and which types of properties would be a good purchase.
+## Local development
 
-For these users, I want to build a buyer-focused experience that helps them:
-
-Understand their purchase budget and financial readiness
-
-Discover which communities and property types have the strongest buyer demand
-
-Compare properties based on liquidity, not just price
-
-Understand which properties may be easier to resell in the future
-
-Save a purchase plan and monitor relevant market changes
-
-The goal is to help renters make more informed buying decisions and eventually become homeowners.
-
-Important product structure
-
-The first screen must clearly offer two options:
-
-I Own a Property → Homeowner journey
-
-I'm Looking to Buy → Buyer journey
-
-Each option should lead to its own experience, with different screens, information and actions.
-
-Both journeys use the same underlying property market data and liquidity indices, but present them differently based on the user's needs.
-
-The journeys should connect when a buyer purchases a property and becomes a homeowner. At that point, they can start tracking the liquidity and value of their own property.
-
-The central feature of PropWorth is Property Liquidity Intelligence, using aggregated buyer search activity, property saves, enquiries, available supply and comparable transactions to estimate demand and liquidity.
-
-Use simulated data for the prototype and clearly identify any indicative sale probabilities as unvalidated estimates.
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/bc2152e4-ca77-4c37-b305-5a4389e2d319).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Install Bun and use a current Node.js version compatible with the project dependencies. From the repository root:
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```
+
+Run checks:
+
+```sh
+bun run test
+bun run lint
+bun run build
+```
+
+The historical catalog requires access to its hosted asset URL. Do not commit credentials, repository metadata, dependencies or generated build output as deliverables.
+
+## GitHub and publishing
+
+Changes committed in Lovable sync to the connected repository through Lovable’s Git integration. Manage the repository connection and check sync status in **Project settings → Git**. Repository sync saves source code; publishing the app is a separate action.
