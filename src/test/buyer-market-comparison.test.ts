@@ -26,6 +26,14 @@ describe("Embedded Buyer market comparison", () => {
     for (const row of rows) { expect(row.type).toBe("Apartment"); expect(row.bedrooms).toBe(2); }
   });
 
+  it("ranks comparison areas by liquidity highest first without changing their scores", () => {
+    const segments = buildBuyerMarketSegments(source).filter(row => row.type === "Apartment" && row.bedrooms === 2).slice(0, 3);
+    const scores = [30, 90, 60];
+    const input = segments.map((row, index) => ({ ...row, liquidity: scores[index] ?? 0 }));
+    expect(marketComparisonRows(input, initialMarketComparison).map(row => row.liquidity)).toEqual([90, 60, 30]);
+    expect(input.map(row => row.liquidity)).toEqual([30, 90, 60]);
+  });
+
   it("compares bedroom configurations within Dubai Marina apartments", () => {
     const rows = marketComparisonRows(buildBuyerMarketSegments(source), { area: "marina", type: "Apartment", bedrooms: "" });
     expect(rows.map(row => row.bedrooms)).toEqual(expect.arrayContaining([1, 2, 3]));

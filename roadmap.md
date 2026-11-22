@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Separate Buyer liquidity comparison screen
+- [x] Move comparison into a dedicated screen reached from Explore Properties.
+- [x] Clarify criteria, legend, aligned scores and bars, selection and matching-listing action without changing calculations.
+- [x] Verify sorting, filters, selection and View Properties on mobile and desktop.
 ## Final homeowner dashboard refinements
 - [x] Remove duplicated valuation and change-property actions; retain selling as the final action.
 - [x] Align homeowner score colors and rename reference sections without changing Buyer.

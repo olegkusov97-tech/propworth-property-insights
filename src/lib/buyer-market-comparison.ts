@@ -43,7 +43,8 @@ export function buildBuyerMarketSegments(listings: HistoricalListing[]): BuyerMa
 
 export function marketComparisonRows(segments: BuyerMarketSegment[], filters: MarketComparisonFilters) {
   return segments.filter(segment => (!filters.area || segment.communityId === filters.area)
-    && (!filters.type || segment.type === filters.type) && (!filters.bedrooms || segment.bedrooms === Number(filters.bedrooms)));
+    && (!filters.type || segment.type === filters.type) && (!filters.bedrooms || segment.bedrooms === Number(filters.bedrooms)))
+    .sort((a, b) => b.liquidity - a.liquidity || a.area.localeCompare(b.area));
 }
 
 export function updateMarketComparison(current: MarketComparisonFilters, key: keyof MarketComparisonFilters, value: string): MarketComparisonFilters {
