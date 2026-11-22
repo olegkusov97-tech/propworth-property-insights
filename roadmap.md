@@ -85,5 +85,6 @@
 
 ## Portable Buyer catalog deployment
 - [x] Validate the full 41,381-record catalog and test a same-origin static copy, direct search, buying and refresh locally.
-- [ ] Deploy the full catalog independently of Lovable; its 17.9 MB file exceeds the enforced 10 MB Git commit limit. The attempted static-path change was rolled back rather than commit a reference to a missing file; the original hosted asset remains unchanged.
-- [ ] Verify the updated Vercel deployment and page refresh; blocked by catalog packaging and no Vercel URL supplied.
+- [x] Partition the complete application catalog into JSON files under 5 MB in public/data and combine them through the existing loader without Lovable asset requests.
+- [x] Commit the partitions, verify exact record preservation and test search, filters, Saved, buying and refresh locally.
+- [ ] Verify the updated Vercel deployment and page refresh; no Vercel URL was supplied.

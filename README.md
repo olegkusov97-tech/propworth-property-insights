@@ -45,7 +45,8 @@ Owner details, drafts, retained homes, monthly snapshots and saved Buyer propert
 - Tailwind CSS v4 and shared design-system controls.
 - `src/components/pw/`: journey UI, shared navigation and interactive charts.
 - `src/lib/`: property models, Buyer adapters, browser storage and reference matching.
-- `src/assets/`: asset pointers, including the immutable full historical catalog.
+- `src/assets/`: supporting asset pointers and retained original source references.
+- `public/data/`: the full historical catalog in four static JSON partitions, each under 5 MB.
 - `src/data/`: compact reference datasets.
 - `src/test/`: model, data-matching, navigation and routing tests.
 
@@ -68,11 +69,11 @@ bun run lint
 bun run build
 ```
 
-The historical catalog requires access to its hosted asset URL. Do not commit credentials, repository metadata, dependencies or generated build output as deliverables.
+The historical catalog is fetched from `/data/bayut-buyer-listings-1.json` through `/data/bayut-buyer-listings-4.json` on the app's own origin. All four files are committed and included as public static assets; no Lovable asset proxy is used for catalog loading. Do not commit credentials, repository metadata, dependencies or generated build output as deliverables.
 
-### Vercel catalog portability limitation
+### Vercel catalog deployment
 
-The current catalog URL uses Lovable's `/__l5e/assets-v1/` infrastructure, which is not served by a standalone Vercel deployment. A complete static copy at `/data/bayut-buyer-listings.json` was verified locally with all 41,381 records, including direct Buyer navigation and refresh, but could not be committed: the file is 17.9 MB and this project's Git commit check enforces a 10 MB per-file limit. The attempted loader change was rolled back so it does not reference an absent deployment file. The original hosted catalog remains intact. Production portability requires a supported way to deploy the full file or suitable public storage; Vercel verification remains pending.
+The loader fetches the four partitions in parallel and combines them in their original order, preserving all 41,381 records and source values. The former oversized single-file catalog is not included in public/data. Each partition stays below both the requested 5 MB limit and the project's enforced 10 MB Git file limit. After deploying the commit on Vercel, verify all four `/data/` URLs return JSON and `/buyer/properties` loads directly and after refresh. Live Vercel verification requires the deployment URL; the original hosted source asset is retained for older versions, but is not used by the current catalog loader.
 
 ## GitHub and publishing
 
