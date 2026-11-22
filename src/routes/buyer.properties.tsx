@@ -2,5 +2,5 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BuyerExplorer } from "@/components/pw/buyer-explorer";
 import { buyerHead } from "@/components/pw/buyer-shell";
 import { parseBuyerFilters } from "@/lib/buyer-liquidity";
-export const Route = createFileRoute("/buyer/properties")({ validateSearch: parseBuyerFilters, head: () => buyerHead("Historical Property Search", "Search the uploaded Bayut property listings using original asking prices and clearly simulated liquidity."), component: Properties });
-function Properties() { const filters = Route.useSearch(); return <BuyerExplorer key={JSON.stringify(filters)} kind="properties" initialFilters={filters} />; }
+export const Route = createFileRoute("/buyer/properties")({ validateSearch: (s: Record<string, unknown>): Partial<import("@/lib/buyer-liquidity").BuyerFilters> & { sort?: string; page?: number } => ({ ...parseBuyerFilters(s), sort: typeof s["sort"] === "string" ? s["sort"] : "newest", page: Math.max(1, Math.floor(Number(s["page"]) || 1)) }), head: () => buyerHead("Historical Property Search", "Search the uploaded Bayut property listings using original asking prices and clearly simulated liquidity."), component: Properties });
+function Properties() { const filters = Route.useSearch(); return <BuyerExplorer kind="properties" initialFilters={filters} initialSort={filters.sort ?? "newest"} initialPage={filters.page ?? 1} />; }

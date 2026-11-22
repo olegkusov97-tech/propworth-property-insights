@@ -8,6 +8,7 @@ import { propertyErrors } from "@/lib/property";
 import { itemPrice, itemScore, type ExploreItem } from "@/lib/buyer-liquidity";
 import type { PropertyFlow } from "./property-onboarding";
 import { DemoContactFields, demoFieldClass, emptyContact } from "./demo-contact";
+import { useStepBack } from "./sticky-navigation";
 
 export function PurchaseJourney({ item }: { item: ExploreItem }) {
   const [stage, setStage] = useState<"idle" | "choose" | "form" | "confirmed" | "purchased">("idle");
@@ -16,11 +17,15 @@ export function PurchaseJourney({ item }: { item: ExploreItem }) {
   const [size, setSize] = useState(""), [errors, setErrors] = useState<string[]>([]);
   const [, setDraft, loaded] = useStored<PropertyFlow | null>("pw-owner-draft", null);
   const navigate = useNavigate();
+  useStepBack(stage === "idle" ? null : () => {
+    setErrors([]);
+    setStage(stage === "form" ? "choose" : stage === "confirmed" ? "form" : stage === "purchased" ? "confirmed" : "idle");
+  });
   const choose = (next: "viewing" | "offer") => { setAction(next); setErrors([]); setStage("form"); };
   return <section className="space-y-3 border-y py-4" aria-label="Demo purchase journey">
     {stage === "idle" ? <Button disabled={!loaded} className="w-full sm:w-auto" onClick={() => setStage("choose")}>Start Buying<ArrowRight /></Button> : <>
       <h2 className="font-display text-xl font-bold">{stage === "confirmed" ? "Demo request confirmed" : stage === "purchased" ? "Become a homeowner · demo" : "Start Buying · demo"}</h2>
-      <p className="text-xs">{itemPrice(item) > 0 ? `Historical asking price AED ${itemPrice(item).toLocaleString("en-GB")}` : "Historical asking price not supplied"} · Simulated liquidity {itemScore(item, "properties")}/100</p>
+      <p className="text-xs">{itemPrice(item) > 0 ? `Historical asking price AED ${itemPrice(item).toLocaleString("en-GB")}` : ""}{itemScore(item, "properties") === null ? " · Liquidity data unavailable" : ` · Simulated liquidity ${itemScore(item, "properties")}/100`}</p>
       {stage === "choose" && <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => choose("viewing")}><CalendarDays />Request a Viewing</Button><Button variant="outline" onClick={() => choose("offer")}><Handshake />Make an Offer</Button></div>}
       {stage === "form" && <form className="space-y-3" onSubmit={e => { e.preventDefault(); const next = [...contactErrors(contact), ...(action === "offer" && offerError(Number(offer)) ? [offerError(Number(offer))] : [])]; setErrors(next); if (!next.length) setStage("confirmed"); }}>
         <h3 className="text-sm font-semibold">{action === "offer" ? "Make an Offer" : "Request a Viewing"}</h3>

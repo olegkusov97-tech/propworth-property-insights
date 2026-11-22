@@ -1,17 +1,14 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import { Brand } from "./brand";
+import { StickyNavigation } from "./sticky-navigation";
 
 export function Screen({ title, back, children }: { title: string; back?: "/" | "/buyer" | "/owner"; children: ReactNode; tone?: string }) {
   return (
     <div className="min-h-screen bg-muted">
       <div className="mx-auto min-h-screen max-w-2xl bg-background pb-10">
-        <header className="sticky top-0 z-10 border-b bg-background px-4 py-3 sm:px-6">
-          <Brand />
-        </header>
-        <main className="space-y-3 px-4 pt-2 sm:px-6">{back && <Button asChild variant="ghost" size="sm" className="-ml-2"><Link to={back}><ArrowLeft />Back</Link></Button>}<h1 className="font-display text-xl font-bold leading-snug">{title}</h1>{children}</main>
+        <StickyNavigation {...(back ? { back } : {})}>
+          <main className="space-y-3 px-4 pt-2 sm:px-6"><h1 className="font-display text-xl font-bold leading-snug">{title}</h1>{children}</main>
+        </StickyNavigation>
       </div>
     </div>
   );

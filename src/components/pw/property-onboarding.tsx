@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, Disclaimer } from "./ui";
 import { buildings, dubaiCommunities, emptyProperty, fromBuilding, pfProperties, propertyErrors, type PropertyDetails } from "@/lib/property";
 import { getCommunity } from "@/lib/market";
+import { useStepBack } from "./sticky-navigation";
 
 export interface PropertyFlow {
   stage: "choose" | "import" | "search" | "details" | "review";
@@ -16,6 +17,10 @@ export function PropertyOnboarding({ flow, onChange, onConfirm, onCancel, hasPro
   onConfirm: (property: PropertyDetails) => void; onCancel: () => void; hasProperty: boolean;
 }) {
   const [errors, setErrors] = useState<string[]>([]);
+  useStepBack(flow.stage !== "choose" || hasProperty ? () => {
+    if (flow.stage === "choose") onCancel();
+    else onChange({ ...flow, stage: flow.stage === "review" ? "details" : "choose" });
+  } : null);
   const update = (property: PropertyDetails) => { setErrors([]); onChange({ ...flow, property }); };
   const choose = (stage: PropertyFlow["stage"], source: string) => onChange({ ...flow, stage, source });
   const review = () => {

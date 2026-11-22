@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect } from "react";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { ArrowLeft, Bookmark, Building2 } from "lucide-react";
+import { Bookmark, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStored } from "@/lib/store";
 import { propertyWatchlist, toggleSaved, type ExploreItem, type ExploreKind, type SavedLiquidity } from "@/lib/buyer-liquidity";
-import { Brand } from "./brand";
+import { StickyNavigation } from "./sticky-navigation";
 import { buyerBackTarget } from "@/lib/navigation";
 
 interface BuyerState {
@@ -20,11 +20,9 @@ export function BuyerShell() {
   useEffect(() => { if (loaded && properties.length !== saved.length) setSaved(properties); }, [loaded, properties, saved.length, setSaved]);
   return <BuyerContext.Provider value={{ saved: properties, loaded, save: (item, kind) => setSaved(toggleSaved(properties, item, kind)) }}>
     <div className="min-h-screen bg-muted"><div className="mx-auto min-h-screen max-w-4xl bg-background pb-10">
-      <header className="border-b px-4 py-3"><Brand /></header>
-      <div className="px-4 pt-2"><Button asChild variant="ghost" size="sm" className="-ml-2"><Link to={back}><ArrowLeft />Back</Link></Button></div>
-      <nav className="sticky top-0 z-20 flex border-b bg-background/95 px-2 py-2 backdrop-blur" aria-label="Buyer navigation">
+      <StickyNavigation back={back} navigation={<nav className="flex border-t bg-background px-2 py-1" aria-label="Buyer navigation">
         {[{ to: "/buyer/properties", label: "Properties", Icon: Building2 }, { to: "/buyer/plan", label: "Saved", Icon: Bookmark }].map(({ to, label, Icon }) => <Button key={to} asChild variant="ghost" className="min-w-0 flex-1 rounded-none border-b-2 border-transparent"><Link to={to} activeProps={{ className: "border-primary bg-secondary text-primary" }}><Icon />{label}{label === "Saved" && loaded && properties.length > 0 ? ` (${properties.length})` : ""}</Link></Button>)}
-      </nav><main className="space-y-4 px-4 pt-4"><Outlet /></main>
+      </nav>}><main className="space-y-4 px-4 pt-4"><Outlet /></main></StickyNavigation>
     </div></div>
   </BuyerContext.Provider>;
 }

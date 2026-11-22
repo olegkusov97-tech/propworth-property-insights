@@ -2,41 +2,37 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Gauge, Meter } from "./ui";
-import { propertyInsights } from "@/lib/property";
-import { aed, liquidityLabel } from "@/lib/market";
-import { findItem, itemScore, itemSegment, itemInsights, itemPrice, type ExploreItem, type ExploreKind } from "@/lib/buyer-liquidity";
-
-
+import { liquidityLabel } from "@/lib/market";
+import { findItem, itemScore, itemSegment, itemInsights, buyerReferenceSales, type ExploreItem, type ExploreKind } from "@/lib/buyer-liquidity";
 import { SaveItem } from "./buyer-explorer";
 import { MarketActivity } from "./market-activity";
 import { MonthlyLineChart } from "./monthly-line-chart";
-import { TransactionReferences } from "./transaction-references";
 import { PurchaseJourney } from "./purchase-journey";
-import { listingBuilding } from "@/lib/historical-listings";
 
 export function BuyerDetail({ kind, id }: { kind: ExploreKind; id: string }) {
   const item = findItem(kind, id);
   if (!item) return <><h1 className="font-display text-xl font-bold">Sample unavailable</h1><Link to={"/buyer/properties"} className="text-primary underline">Back to explore</Link></>;
-  const r = itemInsights(item), score = itemScore(item, kind);
+  const score = itemScore(item, kind), r = score === null ? null : itemInsights(item);
+  const listing = item.listing, sales = buyerReferenceSales(item);
+  const fields = listing ? [["Building", listing.building === "Unknown" ? "" : listing.building], ["City", listing.city], ["Bathrooms", listing.bathrooms > 0 ? String(listing.bathrooms) : ""], ["Furnishing", listing.furnishing === "Unknown" || listing.furnishing === "Not specified" ? "" : listing.furnishing]].filter(([, value]) => value) : [];
   return <>
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:justify-between"><div className="min-w-0"><h1 className="break-words font-display text-2xl font-bold">{item.name}</h1><p className="mt-1 text-xs text-muted-foreground">{itemSegment(item)}</p></div><div className="shrink-0"><SaveItem item={item} kind={kind} /></div></div>
-    {<>
-      <p className="text-xs text-muted-foreground">Historical Bayut sample · not currently available. Photos and unit size are not supplied.</p>
-      {item.listing && <dl className="grid grid-cols-2 gap-3 border-y py-3 text-xs">{[["Asking price", item.listing.price > 0 ? `AED ${item.listing.price.toLocaleString("en-GB")}` : "Not supplied"], ["Building", listingBuilding(item.listing)], ["City", item.listing.city], ["Bathrooms", String(item.listing.bathrooms)], ["Furnishing", item.listing.furnishing], ["Posted", item.listing.date], ["Completion year (building)", item.listing.year > 0 ? String(item.listing.year) : "Not supplied"], ["Purpose", item.listing.purpose]].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="mt-1 break-words font-semibold">{value}</dd></div>)}</dl>}
-      {item.listing && <details className="border-y py-3"><summary className="cursor-pointer text-xs font-semibold">Building information · not unit details</summary><div className="mt-3 space-y-2 text-xs text-muted-foreground">{[["Total building floors", item.listing.buildingFloors], ["Total building parking spaces", item.listing.buildingParking], ["Elevators", item.listing.elevators], ["Reported total building area (source sq ft)", item.listing.buildingArea]].map(([label, value]) => <p key={String(label)}>{label}: <b className="text-foreground">{typeof value === "number" && value > 0 ? value.toLocaleString() : "Not supplied"}</b></p>)}<p>These are unverified building-level fields from the CSV. They do not establish this unit's size, floor or allocated parking.</p></div></details>}
-      {item.property.genericBenchmark && <p className="text-xs text-muted-foreground">Generic simulated benchmark: this area or property type is outside the modeled catalog. Scores and charts do not represent this local market.</p>}
-      <PurchaseJourney item={item} />
-    </>}
-    <section className="border-y py-4"><div className="flex items-center gap-4"><Gauge value={score} label="Liquidity Score" labelClassName="max-w-16 text-center leading-tight" /><div><h2 className="font-display text-xl font-bold">{liquidityLabel(score)} Liquidity</h2><p className="text-xs text-muted-foreground">{"Illustrative liquidity, using available recorded characteristics."}</p>{kind === "properties" && <p className="mt-2 text-xs">Simulated benchmark <b>{r.market.liquidity}/100</b></p>}</div></div><p className="mt-3 text-xs text-muted-foreground">{`This property scores ${Math.abs(score - r.market.liquidity)} points ${score >= r.market.liquidity ? "above" : "below"} the simulated benchmark. No unit-size matching is possible.`} Simulated, not a guarantee of sale.</p></section>
-    <div className="grid grid-cols-2 gap-3"><div className="rounded-lg border bg-card p-3"><h2 className="text-xs">Buyer Demand</h2><p className="my-1 text-xl font-bold">{r.market.demand}/100</p><Meter value={r.market.demand} /><p className="mt-2 text-[10px] text-muted-foreground">Similar homes · higher is better</p></div><div className="rounded-lg border bg-card p-3"><h2 className="text-xs">Supply Competition</h2><p className="my-1 text-xl font-bold">{r.market.competition}/100</p><Meter value={r.market.competition} className="bg-accent" /><p className="mt-2 text-[10px] text-muted-foreground">Lower is better</p></div></div>
-
-    <BuyerLiquidityTrend item={item} kind={kind} />
-    <MarketActivity snapshots={r.snapshots} segment={itemSegment(item)} />
-    {kind === "properties" && !item.listing && <TransactionReferences property={item.property} />}
-    <details className="border-y py-3"><summary className="cursor-pointer text-sm font-semibold">How is this calculated?</summary><div className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground"><p>We use the same simulated model as the homeowner dashboard. Searches, saves and enquiries describe buyer interest in similar homes. Active listings show available choice; comparable sales cover the last 90 days.</p><p>Comparison segment: {itemSegment(item)}. {"Unit size is absent, so the illustration omits size adjustments and cannot provide size-matched sale references. Building-level parking, floors and area are never treated as unit characteristics."}</p><p>High: 70–100; Moderate: 50–69; Low: below 50. Scores are illustrative comparisons, not validated resale forecasts or estimated sale times.</p></div></details>
-
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3"><div className="min-w-0"><h1 className="break-words font-display text-2xl font-bold">{item.name}</h1><p className="mt-1 text-xs text-muted-foreground">{itemSegment(item)}</p></div><SaveItem item={item} kind={kind} /></div>
+    <p className="text-xs text-muted-foreground">Historical sample listing · not confirmed currently available.</p>
+    {fields.length > 0 && <dl className="grid grid-cols-2 gap-3 text-xs">{fields.map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="mt-1 break-words font-semibold">{value}</dd></div>)}</dl>}
+    {listing && listing.price > 0 && <div className="border-y py-3"><p className="text-xs text-muted-foreground">Historical asking price</p><p className="font-display text-2xl font-bold">AED {listing.price.toLocaleString("en-GB")}</p></div>}
+    {score !== null && r ? <>
+      <section className="border-y py-4"><div className="flex items-center gap-4"><Gauge value={score} label="Liquidity Score" labelClassName="max-w-16 text-center leading-tight" /><div className="min-w-0"><h2 className="font-display text-xl font-bold">{liquidityLabel(score)} Liquidity</h2><p className="mt-1 text-xs text-muted-foreground">Property Liquidity · simulated</p><p className="mt-2 text-xs">Similar Properties <b>{r.market.liquidity}/100</b></p></div></div><p className="mt-3 text-xs text-muted-foreground">{score === r.market.liquidity ? "On par with similar properties." : `${Math.abs(score - r.market.liquidity)} points ${score > r.market.liquidity ? "above" : "below"} similar properties.`} Illustrative, not a guarantee of sale.</p></section>
+      <div className="grid grid-cols-2 gap-3"><div className="rounded-lg border bg-card p-3"><h2 className="text-xs">Buyer Demand</h2><p className="my-1 text-xl font-bold">{r.market.demand}/100</p><Meter value={r.market.demand} /><p className="mt-2 text-[10px] text-muted-foreground">Simulated · similar homes</p></div><div className="rounded-lg border bg-card p-3"><h2 className="text-xs">Supply Competition</h2><p className="my-1 text-xl font-bold">{r.market.competition}/100</p><Meter value={r.market.competition} className="bg-accent" /><p className="mt-2 text-[10px] text-muted-foreground">Simulated · lower is better</p></div></div>
+      <MarketActivity snapshots={r.snapshots} segment={itemSegment(item)} />
+      <BuyerLiquidityTrend item={item} kind={kind} />
+      <details className="border-y py-3"><summary className="cursor-pointer text-sm font-semibold">How is this calculated?</summary><div className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground"><p>Scores, demand and activity use the homeowner simulated model for a matching area, property type and bedroom configuration. They are not derived from these historical adverts or from DLD transactions.</p><p>Unit size is absent, so size adjustments are omitted. Building floors, parking and area are never treated as unit characteristics.</p><p>High: 70–100; Moderate: 50–69; Low: below 50. These are illustrative comparisons, not validated forecasts or estimated sale times.</p></div></details>
+    </> : <section className="border-y py-4"><h2 className="text-sm font-semibold">Liquidity data unavailable</h2><p className="mt-1 text-xs text-muted-foreground">There is no suitable benchmark for this area, property type and bedroom configuration.</p></section>}
+    <details className="border-y py-3"><summary className="cursor-pointer text-sm font-semibold">DLD comparable sale references{sales.length > 0 ? ` (${sales.length})` : ""}</summary><div className="mt-3 space-y-3 text-xs"><p className="text-muted-foreground">Recorded Sale registrations from the uploaded DLD file, 25 Aug–22 Nov 2026. Matched by area, type, bedrooms and status, not unit size. These are real transaction references, separate from simulated liquidity, and not independently verified.</p>{sales.length ? sales.slice(0, 6).map(sale => <div className="border-t pt-2" key={sale.id}><b>{sale.project}</b><p className="mt-1 text-muted-foreground">{sale.date} · {sale.bedrooms === 0 ? "Studio" : `${sale.bedrooms}BR`} · {sale.sizeSqft.toLocaleString("en-GB", { maximumFractionDigits: 0 })} sq ft</p><p className="mt-1">AED {sale.price.toLocaleString("en-GB")} · AED {sale.pricePerSqft.toLocaleString("en-GB")}/sq ft</p></div>) : <p>No matching transactions in the uploaded reference.</p>}<p className="text-muted-foreground">Source area is assumed to be m² and converted to sq ft; transaction prices are not advertised asking prices.</p></div></details>
+    {listing && <details className="border-y py-3"><summary className="cursor-pointer text-xs font-semibold">Listing and building reference details</summary><div className="mt-3 space-y-2 text-xs text-muted-foreground">{listing.date && <p>Posted {listing.date}</p>}{[["Completion year", listing.year], ["Total building floors", listing.buildingFloors], ["Total building parking spaces", listing.buildingParking], ["Elevators", listing.elevators], ["Total building area (source sq ft)", listing.buildingArea]].map(([label, value]) => typeof value === "number" && value > 0 ? <p key={String(label)}>{label}: {value.toLocaleString()}</p> : null)}<p>Building-level information is unverified and does not establish this unit’s size, floor or allocated parking.</p></div></details>}
+    <PurchaseJourney item={item} />
   </>;
 }
+
 function BuyerLiquidityTrend({ item, kind }: { item: ExploreItem; kind: ExploreKind }) {
   const r = itemInsights(item);
   const [period, setPeriod] = useState(12), [month, setMonth] = useState("Nov 2026");

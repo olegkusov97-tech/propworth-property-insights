@@ -32,7 +32,7 @@ use the editor.
 ## Property prototype
 - Keep the app-wide visual identity in shared CSS tokens and the shared Brand component; page-specific colors must use semantic tokens so all journeys remain consistent.
 - Scope homeowner score color overrides to score and liquidity-history wrappers, and pass optional reference titles so homeowner presentation changes do not restyle Buyer.
-- Render page Back links below the brand-only header; keep Buyer destinations in the tested navigation helper so search returns home and deeper pages return to property search.
+- Keep branding, Back and Buyer tabs in one sticky shared header; Back reverses active journey steps before using router history, preserving query-based search state and in-session forms.
 - Keep shared community calculations unchanged; buyer liquidity explorers adapt the browser-safe homeowner property model so both journeys show consistent indicators without altering legacy finance estimates.
 - Normalize extended owner details at the homeowner boundary to retain compatibility with properties created by the buyer journey and older local records.
 - Persist owner setup drafts and confirmed details in separate browser storage keys, so incomplete edits do not overwrite the active property.
@@ -44,6 +44,6 @@ use the editor.
 - Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
 - Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.
 - Keep uploaded transaction references separate from simulated liquidity inputs; use deduplicated Sale registrations with explicit area/subtype/status/bedroom/size matching and disclose source units assumptions so real references never imply validated predictions.
-- Keep historical listing data separate from simulated model inputs; preserve source addresses/types, omit missing unit-size adjustments, disclose generic benchmarks outside modeled areas/types, and require actual size before homeowner review because building-level fields are not unit facts.
+- Keep historical listing data separate from simulated model inputs; preserve source addresses/types, omit missing unit-size adjustments, gate all Buyer scores and simulated insights by explicit area/type/bedroom benchmark configurations, and require actual size before homeowner review because building-level fields are not unit facts.
 - Run purchase and agent-request demos entirely in browser state without transmitting or retaining contact details; keep owner selling drafts in property-scoped device storage and photo previews in temporary object URLs because no action represents a real enquiry or publication.
 - Load the full public historical catalog from its immutable asset through the client-only buyer layout and Query cache; keep the catalog out of source bundles so large uploaded datasets remain durable without oversized repository files.

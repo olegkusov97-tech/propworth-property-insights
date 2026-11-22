@@ -65,3 +65,9 @@
 - [x] Explain monthly changes and simplify methodology, with optional technical details.
 - [x] Show detailed mock comparable sales and interactive monthly liquidity history.
 - [x] Verify pricing isolation, characteristic updates, chart selection and existing homeowner flows; preserve buyer screens.
+## Final Buyer properties and sticky navigation
+- [x] Update the homepage headline and supporting copy to the requested wording.
+- [x] Default to Dubai Ready residential listings and preserve search state.
+- [x] Compact cards and gate Buyer liquidity by explicit matching benchmarks.
+- [x] Reorder detail insights and retain the buying demo with actual transaction references.
+- [x] Keep Back sticky across journeys and verify mobile flows.

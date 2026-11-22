@@ -6,10 +6,10 @@ import { Brand } from "@/components/pw/brand";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Understand Property Liquidity — Property Liquidity by Property Finder" },
-      { name: "description", content: "See how easily a property could sell." },
-      { property: "og:title", content: "Understand Property Liquidity — Property Liquidity by Property Finder" },
-      { property: "og:description", content: "See how easily a property could sell." },
+      { title: "Know Your Property's Liquidity — Property Liquidity by Property Finder" },
+      { name: "description", content: "Explore buyer demand, market trends and resale potential, whether you own a home or are looking to buy." },
+      { property: "og:title", content: "Know Your Property's Liquidity — Property Liquidity by Property Finder" },
+      { property: "og:description", content: "Explore buyer demand, market trends and resale potential, whether you own a home or are looking to buy." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -24,8 +24,8 @@ function Index() {
         <div className="mx-auto max-w-4xl px-4 py-3 sm:px-6"><Brand /></div>
       </header>
       <section className="bg-muted"><div className="mx-auto max-w-4xl px-4 py-3 sm:px-6 sm:py-6">
-        <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">Understand Property Liquidity</h1>
-        <p className="mt-1 max-w-xl text-[13px] leading-snug text-muted-foreground sm:text-sm sm:leading-relaxed">See how easily a property could sell.</p>
+        <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">Know Your Property's Liquidity</h1>
+        <p className="mt-1 max-w-xl text-[13px] leading-snug text-muted-foreground sm:text-sm sm:leading-relaxed">Explore buyer demand, market trends and resale potential, whether you own a home or are looking to buy.</p>
       </div></section>
       <main className="mx-auto max-w-4xl px-4 pb-4 pt-3 sm:px-6 sm:pt-6">
         <div className="grid items-stretch gap-3 md:grid-cols-2 md:gap-4">

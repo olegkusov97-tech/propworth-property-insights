@@ -8,6 +8,7 @@ import { useStored } from "@/lib/store";
 import { contactErrors, listingDisposition, offerError } from "@/lib/demo-decisions";
 import { DemoContactFields, demoFieldClass, emptyContact } from "./demo-contact";
 import { PropertyForm } from "./property-onboarding";
+import { useStepBack } from "./sticky-navigation";
 
 interface ListingDraft { property: PropertyDetails; asking: string; description: string; agentId: string }
 const dispositionLabel = (agentId: string) => listingDisposition(agentId).requiresAgent ? "Draft · agent required" : "Agent selected · awaiting authorization";
@@ -18,6 +19,10 @@ export function SellingJourney({ property }: { property: PropertyDetails }) {
   const [method, setMethod] = useState<"choose" | "agent" | "listing">("choose");
   const [confirmed, setConfirmed] = useState(false), [contact, setContact] = useState(emptyContact), [error, setError] = useState("");
   const [photos, setPhotos] = useState<{ name: string; url: string }[]>([]);
+  useStepBack(confirmed || method !== "choose" ? () => {
+    if (confirmed) setConfirmed(false);
+    else setMethod("choose");
+  } : null);
   const urls = useRef<string[]>([]);
   useEffect(() => () => { urls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
   const update = (next: Partial<ListingDraft>) => { setDraft({ ...draft, ...next }); setConfirmed(false); };

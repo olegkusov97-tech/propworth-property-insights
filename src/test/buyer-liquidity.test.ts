@@ -1,7 +1,7 @@
 import { fetchHistoricalListings } from "@/lib/historical-listings";
 import { initializeBuyerCatalog } from "@/lib/buyer-liquidity";
 import { beforeAll, describe, expect, it } from "vitest";
-import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, toggleSaved, propertyWatchlist } from "@/lib/buyer-liquidity";
+import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, toggleSaved, propertyWatchlist, defaultBuyerFilters, hasLiquidityBenchmark, buyerReferenceSales } from "@/lib/buyer-liquidity";
 import { propertyInsights } from "@/lib/property";
 import { historicalListings } from "@/lib/historical-listings";
 
@@ -43,9 +43,47 @@ describe("Historical buyer property catalog", () => {
     expect(filterItems(sampleProperties, { ...emptyBuyerFilters, minSize: "200" })).toEqual([]);
   });
   it("reuses the homeowner score and saves the score at save time", () => {
-    const item = sampleProperties[0]; if (!item) throw new Error("Missing source");
+    const item = sampleProperties.find(hasLiquidityBenchmark); if (!item) throw new Error("Missing source");
     expect(itemScore(item,"properties")).toBe(propertyInsights(item.property).property.liquidity);
     const saved = toggleSaved([],item,"properties"); expect(saved[0]?.score).toBe(itemScore(item,"properties"));
     expect(toggleSaved(saved,item,"properties")).toEqual([]);
+  });
+});
+
+
+describe("Buyer defaults and benchmark eligibility", () => {
+  it("defaults to Ready residential homes in Dubai while leaving all records filterable", () => {
+    const rows = filterItems(sampleProperties, defaultBuyerFilters);
+    expect(rows.length).toBeGreaterThan(24);
+    expect(rows.length).toBeLessThan(41381);
+    for (const item of rows) {
+      expect(item.listing?.city).toBe("Dubai");
+      expect(item.listing?.status).toBe("Ready");
+      expect(["Apartment", "Villa", "Townhouse"]).toContain(item.listing?.type);
+    }
+    expect(filterItems(sampleProperties, emptyBuyerFilters)).toHaveLength(41381);
+  });
+  it("does not score a supported area with an unsupported bedroom configuration", () => {
+    const base = sampleProperties.find(hasLiquidityBenchmark); if (!base) throw new Error("Missing benchmark");
+    const item = { ...base, property: { ...base.property, bedrooms: 10 } };
+    expect(hasLiquidityBenchmark(item)).toBe(false);
+    expect(itemScore(item, "properties")).toBeNull();
+    expect(toggleSaved([], item, "properties")[0]?.score).toBeNull();
+  });
+  it("does not score unsupported areas or property types", () => {
+    const item = sampleProperties.find(item => item.property.genericBenchmark);
+    if (!item) throw new Error("Missing unsupported listing");
+    expect(itemScore(item, "properties")).toBeNull();
+  });
+  it("matches real DLD references by area, type, bedrooms and status without fabricating unit size", () => {
+    const item = sampleProperties.find(i => i.listing?.area === "Dubai Marina" && i.property.propertyType === "Apartment" && i.property.bedrooms === 2 && i.property.status === "Ready");
+    if (!item) throw new Error("Missing Marina reference");
+    const sales = buyerReferenceSales(item);
+    expect(sales.length).toBeGreaterThan(0);
+    expect(item.property.sizeSqft).toBe(0);
+    for (const sale of sales) {
+      expect(sale.area).toBe("DUBAI MARINA"); expect(sale.subtype).toBe("Flat");
+      expect(sale.bedrooms).toBe(2); expect(sale.status).toBe("Ready");
+    }
   });
 });
