@@ -10,33 +10,87 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BuyerRouteImport } from './routes/buyer'
+import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as BuyerIndexRouteImport } from './routes/buyer.index'
+import { Route as BuyerCompareRouteImport } from './routes/buyer.compare'
+import { Route as BuyerPlanRouteImport } from './routes/buyer.plan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuyerRoute = BuyerRouteImport.update({
+  id: '/buyer',
+  path: '/buyer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuyerIndexRoute = BuyerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerCompareRoute = BuyerCompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerPlanRoute = BuyerPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => BuyerRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/buyer': typeof BuyerRouteWithChildren
+  '/owner': typeof OwnerRoute
+  '/buyer/compare': typeof BuyerCompareRoute
+  '/buyer/plan': typeof BuyerPlanRoute
+  '/buyer/': typeof BuyerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/owner': typeof OwnerRoute
+  '/buyer/compare': typeof BuyerCompareRoute
+  '/buyer/plan': typeof BuyerPlanRoute
+  '/buyer': typeof BuyerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/buyer': typeof BuyerRouteWithChildren
+  '/owner': typeof OwnerRoute
+  '/buyer/compare': typeof BuyerCompareRoute
+  '/buyer/plan': typeof BuyerPlanRoute
+  '/buyer/': typeof BuyerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/buyer' | '/owner' | '/buyer/compare' | '/buyer/plan' | '/buyer/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/owner' | '/buyer/compare' | '/buyer/plan' | '/buyer'
+  id:
+    | '__root__'
+    | '/'
+    | '/buyer'
+    | '/owner'
+    | '/buyer/compare'
+    | '/buyer/plan'
+    | '/buyer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BuyerRoute: typeof BuyerRouteWithChildren
+  OwnerRoute: typeof OwnerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +102,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buyer': {
+      id: '/buyer'
+      path: '/buyer'
+      fullPath: '/buyer'
+      preLoaderRoute: typeof BuyerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buyer/': {
+      id: '/buyer/'
+      path: '/'
+      fullPath: '/buyer/'
+      preLoaderRoute: typeof BuyerIndexRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/compare': {
+      id: '/buyer/compare'
+      path: '/compare'
+      fullPath: '/buyer/compare'
+      preLoaderRoute: typeof BuyerCompareRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/plan': {
+      id: '/buyer/plan'
+      path: '/plan'
+      fullPath: '/buyer/plan'
+      preLoaderRoute: typeof BuyerPlanRouteImport
+      parentRoute: typeof BuyerRoute
+    }
   }
 }
 
+interface BuyerRouteChildren {
+  BuyerCompareRoute: typeof BuyerCompareRoute
+  BuyerPlanRoute: typeof BuyerPlanRoute
+  BuyerIndexRoute: typeof BuyerIndexRoute
+}
+
+const BuyerRouteChildren: BuyerRouteChildren = {
+  BuyerCompareRoute: BuyerCompareRoute,
+  BuyerPlanRoute: BuyerPlanRoute,
+  BuyerIndexRoute: BuyerIndexRoute,
+}
+
+const BuyerRouteWithChildren = BuyerRoute._addFileChildren(BuyerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BuyerRoute: BuyerRouteWithChildren,
+  OwnerRoute: OwnerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
