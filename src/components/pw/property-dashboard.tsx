@@ -9,6 +9,7 @@ import { useStored, type OwnedProperty } from "@/lib/store";
 import { retainSnapshots, segmentName, type OwnerSnapshot } from "@/lib/owner-history";
 import { LiquidityHistory } from "./liquidity-history";
 import { MarketActivity } from "./market-activity";
+import { TransactionReferences } from "./transaction-references";
 
 export function PropertyDashboard({ owned, onEdit, onReplace }: {
   owned: OwnedProperty; onChange: (p: PropertyDetails) => void; onEdit: () => void; onReplace: () => void;
@@ -62,7 +63,7 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
     <MarketActivity snapshots={snapshots} segment={segment} />
     <LiquidityHistory history={snapshots} />
     <Card className="space-y-1"><h2 className="text-xs font-semibold text-muted-foreground">Estimated Value</h2><p className="font-display text-xl font-bold" data-testid="property-value">{aed(r.value)}</p><p className="text-[11px] text-muted-foreground">Indicative range {aed(r.value * .93)}–{aed(r.value * 1.07)}</p><p className="text-xs text-muted-foreground">AED {r.pricePerSqft.toLocaleString()}/sq ft · simulated</p></Card>
-    <details className="rounded-2xl border bg-card p-4 shadow-card"><summary className="cursor-pointer text-sm font-semibold">Comparable Sales</summary><div className="mt-3 text-xs text-muted-foreground"><p>Sample transactions · last 90 days · not verified records.{p.status === "Off-plan" ? " Off-plan resale / assignments." : ""}</p><div className="divide-y">{r.comparables.map(comp => <article key={comp.id} className="space-y-1 py-3" data-testid="comparable-sale"><p className="font-semibold text-foreground">{comp.building}</p><p>{comp.bedrooms === 0 ? "Studio" : `${comp.bedrooms} bedrooms`} · {comp.sizeSqft.toLocaleString()} sq ft · {comp.status}</p><p>{new Date(`${comp.transactionDate}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}</p><div className="flex flex-wrap justify-between gap-2"><b className="text-foreground">{aed(comp.price)}</b><span>AED {comp.pricePerSqft.toLocaleString()}/sq ft</span></div></article>)}</div></div></details>
+    <TransactionReferences property={p} />
     <Card className="flex items-start gap-3 bg-secondary"><Bell className="mt-1 size-5 shrink-0 text-primary" /><div><p className="text-sm font-semibold">Monthly liquidity updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no notifications sent." : "Keep up with demand and liquidity. Demo only."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div></Card>
     <Button variant="link" className="w-full text-muted-foreground" onClick={onReplace}>Change property</Button>
     <Link to="/buyer" className="block text-center text-xs text-primary underline">Thinking of buying another? Open buyer tools</Link>

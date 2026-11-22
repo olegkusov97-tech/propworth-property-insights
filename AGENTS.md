@@ -39,3 +39,4 @@ use the editor.
 - Keep buyer catalog, filtering and comparison rules in a browser-safe adapter; market segments use neutral home details while individual listings use their sample characteristics.
 - Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
 - Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.
+- Keep uploaded transaction references separate from simulated liquidity inputs; use deduplicated Sale registrations with explicit area/subtype/status/bedroom/size matching and disclose source units assumptions so real references never imply validated predictions.

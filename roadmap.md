@@ -1,4 +1,9 @@
 # Homeowner improvements
+## Uploaded transaction reference
+- [x] Prepare a filtered transaction reference with source provenance and conservative matching.
+- [x] Show uploaded sale references on homeowner and buyer detail pages without changing simulated liquidity.
+- [x] Test matching and verify the reference panel.
+
 ## Buyer liquidity exploration
 - [x] Add independent market and property entry points with filters, details and comparisons.
 - [x] Reuse homeowner indicators and charts; remove unsupported buyer sale predictions.

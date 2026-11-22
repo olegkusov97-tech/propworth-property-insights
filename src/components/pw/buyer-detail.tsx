@@ -11,6 +11,7 @@ import type { PropertyFlow } from "./property-onboarding";
 import { SaveItem } from "./buyer-explorer";
 import { MarketActivity } from "./market-activity";
 import { MonthlyLineChart } from "./monthly-line-chart";
+import { TransactionReferences } from "./transaction-references";
 
 export function BuyerDetail({ kind, id }: { kind: ExploreKind; id: string }) {
   const item = findItem(kind, id);
@@ -25,6 +26,7 @@ export function BuyerDetail({ kind, id }: { kind: ExploreKind; id: string }) {
     <p className="text-sm">{kind === "markets" ? "Typical estimated home value" : "Sample listing price"}: <b>{aed(r.value)}</b></p>
     <BuyerLiquidityTrend item={item} kind={kind} />
     <MarketActivity snapshots={r.snapshots} segment={itemSegment(item)} />
+    <TransactionReferences property={item.property} />
     <details className="border-y py-3"><summary className="cursor-pointer text-sm font-semibold">How is this calculated?</summary><div className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground"><p>We use the same simulated model as the homeowner dashboard. Searches, saves and enquiries describe buyer interest in similar homes. Active listings show available choice; comparable sales cover the last 90 days.</p><p>Comparison segment: {itemSegment(item)} · {Math.round(item.property.sizeSqft * .75).toLocaleString()}–{Math.round(item.property.sizeSqft * 1.25).toLocaleString()} sq ft. Optional home details affect only the illustrative property score and estimated value, not market activity.</p><p>High: 70–100; Moderate: 50–69; Low: below 50. Scores are illustrative comparisons, not validated resale forecasts or estimated sale times.</p></div></details>
     {kind === "properties" && <PurchaseHandoff item={item} />}
   </>;
