@@ -1,4 +1,4 @@
-import { buildings, emptyProperty, fromBuilding, propertyInsights, type PropertyDetails } from "./property";
+import { buildings, emptyProperty, fromBuilding, propertyInsights, scoreMarket, type PropertyDetails } from "./property";
 import { getCommunity } from "./market";
 import { segmentName } from "./owner-history";
 import { initializeHistoricalListings, type HistoricalListing } from "./historical-listings";
@@ -31,20 +31,58 @@ export const itemsFor = (kind: ExploreKind) => sampleProperties;
 export const findItem = (kind: ExploreKind, id: string) => propertyById.get(id);
 const insightCache = new WeakMap<ExploreItem, ReturnType<typeof propertyInsights>>();
 const profileCache = new Map<string, ReturnType<typeof propertyInsights>>();
+// Stable demo seeds are identifiers, not market evidence or price predictions.
+function demoSeed(value: string) {
+  let seed = 2166136261;
+  for (const char of value) seed = Math.imul(seed ^ char.charCodeAt(0), 16777619);
+  return seed >>> 0;
+}
+function illustrativeInsights(item: ExploreItem, base: ReturnType<typeof propertyInsights>) {
+  const p = item.property;
+  const segment = itemSegment(item);
+  const seed = demoSeed(segment);
+  const propertySeed = demoSeed(`${segment}|${item.name}|${p.building}|${p.furnishing}`);
+  const interest = .65 + (seed % 91) / 100;
+  const supply = .7 + (Math.floor(seed / 97) % 81) / 100;
+  const gap = (propertySeed % 17) - 8;
+  const snapshots = base.snapshots.map((row, i) => {
+    const seasonal = 1 + ((demoSeed(`${segment}|${row.month}`) % 15) - 7) / 100;
+    const activity = scoreMarket({
+      searches: Math.max(1, Math.round(row.searches * interest * seasonal)),
+      saves: Math.max(1, Math.round(row.saves * interest * seasonal)),
+      enquiries: Math.max(1, Math.round(row.enquiries * interest * seasonal)),
+      listings: Math.max(8, Math.round(row.listings * supply / seasonal)),
+      sales90d: Math.max(3, Math.round(row.sales90d * interest)),
+      days: Math.max(14, row.days + (seed % 29) - 14),
+    });
+    const historicalGap = i === base.snapshots.length - 1 ? gap : gap + ((demoSeed(`${item.name}|${row.month}`) % 5) - 2);
+    return { ...activity, month: row.month, segment, market: activity.liquidity,
+      property: Math.max(0, Math.min(100, activity.liquidity + historicalGap)) };
+  });
+  const latest = snapshots.at(-1), previous = snapshots.at(-2);
+  if (!latest || !previous) return base;
+  const history = snapshots.map(({ month, market, property }) => ({ month, market, property }));
+  return { ...base, market: { ...latest, liquidity: latest.market }, previousMarket: { ...previous, liquidity: previous.market },
+    property: { demand: latest.demand, competition: latest.competition, liquidity: latest.property },
+    previousProperty: { liquidity: previous.property }, snapshots, history, liquidityHistory: history.map(row => row.property),
+    signals: { searches: latest.searches, saves: latest.saves, enquiries: latest.enquiries, listings: latest.listings, sales90d: latest.sales90d } };
+}
 export function itemInsights(item: ExploreItem) {
   const existing = insightCache.get(item); if (existing) return existing;
   const p = item.property;
   const recognizedBuilding = buildings.some(b => b.communityId === p.communityId && b.type === p.propertyType && b.name.toLowerCase() === p.building.toLowerCase()) ? p.building.toLowerCase() : "";
-  const key = item.listing ? [p.communityId, p.propertyType, p.bedrooms, p.status, p.furnishing, recognizedBuilding].join("|") : item.id;
-  const r = profileCache.get(key) ?? propertyInsights(p);
+  const matched = hasLiquidityBenchmark(item);
+  const key = matched && item.listing ? [p.communityId, p.propertyType, p.bedrooms, p.status, p.furnishing, recognizedBuilding].join("|") : `${item.id}|${itemSegment(item)}|${item.name}`;
+  const base = profileCache.get(key) ?? propertyInsights(p);
+  const r = profileCache.has(key) || matched ? base : illustrativeInsights(item, base);
   profileCache.set(key, r); insightCache.set(item, r); return r;
 }
 export function hasLiquidityBenchmark(item: ExploreItem) {
   const p = item.property;
   return !p.genericBenchmark && buildings.some(b => b.communityId === p.communityId && b.type === p.propertyType && b.bedrooms === p.bedrooms);
 }
-export function itemScore(item: ExploreItem, kind: ExploreKind): number | null {
-  return hasLiquidityBenchmark(item) ? itemInsights(item).property.liquidity : null;
+export function itemScore(item: ExploreItem, kind: ExploreKind): number {
+  return itemInsights(item).property.liquidity;
 }
 export function buyerReferenceSales(item: ExploreItem) {
   if (item.property.genericBenchmark) return [];

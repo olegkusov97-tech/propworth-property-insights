@@ -71,3 +71,7 @@
 - [x] Compact cards and gate Buyer liquidity by explicit matching benchmarks.
 - [x] Reorder detail insights and retain the buying demo with actual transaction references.
 - [x] Keep Back sticky across journeys and verify mobile flows.
+
+## Restore full Buyer liquidity
+- [x] Restore all listing analysis with stable, varied fallback simulations and explicit disclosures.
+- [x] Verify charts, real DLD references, saving and buying without changing other journeys.

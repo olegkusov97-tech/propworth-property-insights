@@ -1,7 +1,7 @@
 import { fetchHistoricalListings } from "@/lib/historical-listings";
 import { initializeBuyerCatalog } from "@/lib/buyer-liquidity";
 import { beforeAll, describe, expect, it } from "vitest";
-import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, toggleSaved, propertyWatchlist, defaultBuyerFilters, hasLiquidityBenchmark, buyerReferenceSales } from "@/lib/buyer-liquidity";
+import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemInsights, itemPrice, sortItems, toggleSaved, propertyWatchlist, defaultBuyerFilters, hasLiquidityBenchmark, buyerReferenceSales } from "@/lib/buyer-liquidity";
 import { propertyInsights } from "@/lib/property";
 import { historicalListings } from "@/lib/historical-listings";
 
@@ -63,17 +63,33 @@ describe("Buyer defaults and benchmark eligibility", () => {
     }
     expect(filterItems(sampleProperties, emptyBuyerFilters)).toHaveLength(41381);
   });
-  it("does not score a supported area with an unsupported bedroom configuration", () => {
+  it("retains full simulated analysis for an unmatched bedroom configuration", () => {
     const base = sampleProperties.find(hasLiquidityBenchmark); if (!base) throw new Error("Missing benchmark");
     const item = { ...base, property: { ...base.property, bedrooms: 10 } };
     expect(hasLiquidityBenchmark(item)).toBe(false);
-    expect(itemScore(item, "properties")).toBeNull();
-    expect(toggleSaved([], item, "properties")[0]?.score).toBeNull();
+    const insights = itemInsights(item);
+    expect(itemScore(item, "properties")).toBeGreaterThanOrEqual(0);
+    expect(itemScore(item, "properties")).toBeLessThanOrEqual(100);
+    expect(insights.snapshots).toHaveLength(12);
+    expect(insights.snapshots.at(-1)?.property).toBe(itemScore(item, "properties"));
+    expect(toggleSaved([], item, "properties")[0]?.score).toBe(itemScore(item, "properties"));
   });
-  it("does not score unsupported areas or property types", () => {
+  it("keeps unsupported listings explorable with stable property-specific demo values", () => {
     const item = sampleProperties.find(item => item.property.genericBenchmark);
     if (!item) throw new Error("Missing unsupported listing");
-    expect(itemScore(item, "properties")).toBeNull();
+    const insights = itemInsights(item);
+    expect(insights.market.demand).toBeGreaterThan(0);
+    expect(insights.market.competition).toBeGreaterThan(0);
+    expect(insights.history).toHaveLength(12);
+    expect(itemInsights({ ...item })).toEqual(insights);
+    const variations = ["Demo Residence A", "Demo Residence B", "Demo Residence C", "Demo Residence D"].map(name => itemInsights({ ...item, name }));
+    expect(new Set(variations.map(r => r.property.liquidity)).size).toBeGreaterThan(1);
+    for (const r of variations) {
+      expect(r.snapshots.at(-1)?.market).toBe(r.market.liquidity);
+      expect(r.snapshots.at(-1)?.property).toBe(r.property.liquidity);
+      expect(r.snapshots.at(-1)?.searches).toBe(r.signals.searches);
+    }
+    expect(item.property.sizeSqft).toBe(0);
   });
   it("matches real DLD references by area, type, bedrooms and status without fabricating unit size", () => {
     const item = sampleProperties.find(i => i.listing?.area === "Dubai Marina" && i.property.propertyType === "Apartment" && i.property.bedrooms === 2 && i.property.status === "Ready");
