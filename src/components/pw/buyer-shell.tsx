@@ -1,26 +1,24 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { ArrowLeft, Bookmark, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStored } from "@/lib/store";
-import { propertyWatchlist, toggleSaved, toggleComparison, type ExploreItem, type ExploreKind, type SavedLiquidity } from "@/lib/buyer-liquidity";
+import { propertyWatchlist, toggleSaved, type ExploreItem, type ExploreKind, type SavedLiquidity } from "@/lib/buyer-liquidity";
 import { Brand } from "./brand";
 import { buyerBackTarget } from "@/lib/navigation";
 
 interface BuyerState {
   saved: SavedLiquidity[]; loaded: boolean;
   save: (item: ExploreItem, kind: ExploreKind) => void;
-  selected: Record<ExploreKind, string[]>; select: (id: string, kind: ExploreKind) => void;
 }
 const BuyerContext = createContext<BuyerState | null>(null);
 export function useBuyer() { const value = useContext(BuyerContext); if (!value) throw new Error("Buyer context missing"); return value; }
 export function BuyerShell() {
   const back = buyerBackTarget(useLocation().pathname);
   const [saved, setSaved, loaded] = useStored<SavedLiquidity[]>("pw-buyer-liquidity-saved", []);
-  const [selected, setSelected] = useState<Record<ExploreKind, string[]>>({ properties: [] });
   const properties = propertyWatchlist(saved);
   useEffect(() => { if (loaded && properties.length !== saved.length) setSaved(properties); }, [loaded, properties, saved.length, setSaved]);
-  return <BuyerContext.Provider value={{ saved: properties, loaded, save: (item, kind) => setSaved(toggleSaved(properties, item, kind)), selected, select: (id, kind) => setSelected(prev => ({ ...prev, [kind]: toggleComparison(prev[kind], id) })) }}>
+  return <BuyerContext.Provider value={{ saved: properties, loaded, save: (item, kind) => setSaved(toggleSaved(properties, item, kind)) }}>
     <div className="min-h-screen bg-muted"><div className="mx-auto min-h-screen max-w-4xl bg-background pb-10">
       <header className="border-b px-4 py-3"><Brand /></header>
       <div className="px-4 pt-2"><Button asChild variant="ghost" size="sm" className="-ml-2"><Link to={back}><ArrowLeft />Back</Link></Button></div>

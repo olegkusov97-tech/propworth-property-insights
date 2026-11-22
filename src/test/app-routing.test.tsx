@@ -14,12 +14,18 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
-  it("has no Markets page or market detail route while keeping property search and comparisons", () => {
+  it("has no Markets page or market detail route while keeping property search", () => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
     expect(router.matchRoutes("/buyer/markets").at(-1)?.routeId).toBe("/buyer");
     expect(router.matchRoutes("/buyer/markets/example").at(-1)?.routeId).toBe("/buyer");
     expect(Object.keys(router.routesById).some(id => id.includes("markets"))).toBe(false);
     expect(router.matchRoutes("/buyer/properties").at(-1)?.routeId).toBe("/buyer/properties");
-    expect(router.matchRoutes("/buyer/compare").at(-1)?.routeId).toBe("/buyer/compare");
+  });
+  it("removes side-by-side comparison routing while retaining property details and Saved", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    expect(Object.keys(router.routesById).some(id => id.includes("compare"))).toBe(false);
+    expect(router.matchRoutes("/buyer/compare").at(-1)?.routeId).toBe("/buyer");
+    expect(router.matchRoutes("/buyer/properties/bayut-1").at(-1)?.routeId).toBe("/buyer/properties_/$id");
+    expect(router.matchRoutes("/buyer/plan").at(-1)?.routeId).toBe("/buyer/plan");
   });
 });

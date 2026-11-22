@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Simplified homepage and no selected-property comparisons
+- [x] Shorten homepage title, subtitle and journey descriptions while preserving branding.
+- [x] Remove comparison page, controls, selection state and comparison-only helpers.
+- [x] Verify homepage CTAs, search, filters, Saved, benchmarks and buying on mobile.
 ## Homepage and consistent navigation
 - [x] Update compact branding, homepage headline and equal homeowner/homebuyer journeys.
 - [x] Move Back below branding in both journeys and compact the homeowner title area.

@@ -66,7 +66,6 @@ export function filterItems(items: ExploreItem[], f: BuyerFilters) {
 export function sortItems(items: ExploreItem[], sort: string, kind: ExploreKind) {
   return [...items].sort((a, b) => sort === "price" ? itemPrice(a) - itemPrice(b) : sort === "price-desc" ? itemPrice(b) - itemPrice(a) : sort === "newest" ? (b.listing?.date ?? "").localeCompare(a.listing?.date ?? "") : itemScore(b, kind) - itemScore(a, kind));
 }
-export function toggleComparison(ids: string[], id: string) { return ids.includes(id) ? ids.filter(value => value !== id) : ids.length < 3 ? [...ids, id] : ids; }
 export interface SavedLiquidity { id: string; kind: ExploreKind; score: number; savedAt: string }
 export function propertyWatchlist(saved: { id: string; kind: string; score: number; savedAt: string }[]): SavedLiquidity[] {
   return saved.filter((s): s is SavedLiquidity => s.kind === "properties");
@@ -74,4 +73,3 @@ export function propertyWatchlist(saved: { id: string; kind: string; score: numb
 export function toggleSaved(saved: SavedLiquidity[], item: ExploreItem, kind: ExploreKind): SavedLiquidity[] {
   return saved.some(s => s.id === item.id && s.kind === kind) ? saved.filter(s => s.id !== item.id || s.kind !== kind) : [...saved, { id: item.id, kind, score: itemScore(item, kind), savedAt: new Date().toISOString() }];
 }
-export function comparisonIds(kind: ExploreKind, raw: string) { return [...new Set(raw.split(","))].filter(id => findItem(kind, id)).slice(0, 3); }

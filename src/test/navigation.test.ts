@@ -11,7 +11,4 @@ describe("Buyer Back navigation", () => {
   it("returns saved properties to property search", () => {
     expect(buyerBackTarget("/buyer/plan")).toBe("/buyer/properties");
   });
-  it("returns comparison to property search", () => {
-    expect(buyerBackTarget("/buyer/compare")).toBe("/buyer/properties");
-  });
 });

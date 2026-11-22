@@ -6,10 +6,10 @@ import { Brand } from "@/components/pw/brand";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Know the value. Understand the liquidity. — Property Liquidity by Property Finder" },
-      { name: "description", content: "See what a property is worth, how strong buyer demand is and how easily it could sell." },
-      { property: "og:title", content: "Know the value. Understand the liquidity. — Property Liquidity by Property Finder" },
-      { property: "og:description", content: "See what a property is worth, how strong buyer demand is and how easily it could sell." },
+      { title: "Understand Property Liquidity — Property Liquidity by Property Finder" },
+      { name: "description", content: "See how easily a property could sell." },
+      { property: "og:title", content: "Understand Property Liquidity — Property Liquidity by Property Finder" },
+      { property: "og:description", content: "See how easily a property could sell." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -23,14 +23,14 @@ function Index() {
       <header className="border-b bg-background">
         <div className="mx-auto max-w-4xl px-4 py-3 sm:px-6"><Brand /></div>
       </header>
-      <section className="bg-muted"><div className="mx-auto max-w-4xl px-4 py-3 sm:px-6 sm:py-10">
-        <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">Know the value. Understand the liquidity.</h1>
-        <p className="mt-2 max-w-xl text-[13px] leading-snug text-muted-foreground sm:text-sm sm:leading-relaxed">See what a property is worth, how strong buyer demand is and how easily it could sell.</p>
+      <section className="bg-muted"><div className="mx-auto max-w-4xl px-4 py-3 sm:px-6 sm:py-6">
+        <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">Understand Property Liquidity</h1>
+        <p className="mt-1 max-w-xl text-[13px] leading-snug text-muted-foreground sm:text-sm sm:leading-relaxed">See how easily a property could sell.</p>
       </div></section>
       <main className="mx-auto max-w-4xl px-4 pb-4 pt-3 sm:px-6 sm:pt-6">
         <div className="grid items-stretch gap-3 md:grid-cols-2 md:gap-4">
-          <Choice to="/owner" audience="FOR HOMEOWNERS" icon={<Home className="h-5 w-5" />} title="My Property Liquidity" text="Understand how easily your home could sell and track changes in buyer demand." cta="Check My Property" />
-          <Choice to="/buyer" audience="FOR HOMEBUYERS" icon={<KeyRound className="h-5 w-5" />} title="Explore Homes by Liquidity" text="Find homes, compare buyer demand and understand their resale potential." cta="Explore Properties" />
+          <Choice to="/owner" audience="FOR HOMEOWNERS" icon={<Home className="h-5 w-5" />} title="My Property Liquidity" text="Track your home's value, liquidity and buyer demand." cta="Check My Property" />
+          <Choice to="/buyer" audience="FOR HOMEBUYERS" icon={<KeyRound className="h-5 w-5" />} title="Explore Homes by Liquidity" text="Discover homes and understand their resale potential." cta="Explore Properties" />
         </div>
         <p className="mt-3 text-center text-[10px] text-muted-foreground">Prototype · simulated data · estimates are unvalidated</p>
       </main>

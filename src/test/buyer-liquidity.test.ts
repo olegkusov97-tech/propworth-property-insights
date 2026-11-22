@@ -1,7 +1,7 @@
 import { fetchHistoricalListings } from "@/lib/historical-listings";
 import { initializeBuyerCatalog } from "@/lib/buyer-liquidity";
 import { beforeAll, describe, expect, it } from "vitest";
-import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, toggleComparison, comparisonIds, toggleSaved, propertyWatchlist } from "@/lib/buyer-liquidity";
+import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, toggleSaved, propertyWatchlist } from "@/lib/buyer-liquidity";
 import { propertyInsights } from "@/lib/property";
 import { historicalListings } from "@/lib/historical-listings";
 
@@ -47,10 +47,5 @@ describe("Historical buyer property catalog", () => {
     expect(itemScore(item,"properties")).toBe(propertyInsights(item.property).property.liquidity);
     const saved = toggleSaved([],item,"properties"); expect(saved[0]?.score).toBe(itemScore(item,"properties"));
     expect(toggleSaved(saved,item,"properties")).toEqual([]);
-  });
-  it("allows 2–3 comparisons and rejects unknown and duplicate identifiers", () => {
-    expect(toggleComparison(["a","b"],"c")).toEqual(["a","b","c"]);
-    expect(toggleComparison(["a","b","c"],"d")).toEqual(["a","b","c"]);
-    expect(comparisonIds("properties", "bayut-1,bayut-1,invalid,bayut-2,bayut-3,bayut-4")).toEqual(["bayut-1","bayut-2","bayut-3"]);
   });
 });

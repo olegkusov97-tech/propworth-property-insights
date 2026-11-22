@@ -38,7 +38,7 @@ use the editor.
 - Derive homeowner segment indicators and activity from one price-independent mock model; ignore legacy asking premiums so unvalidated pricing predictions cannot reappear.
 - Retain closed homeowner monthly snapshots in a separate browser ledger and update only the current month; historical seed records use a fixed sample profile so edits never rewrite past scores.
 - Share the accessible monthly line chart between homeowner activity and liquidity history so tap, hover and keyboard month selection stay consistent.
-- Keep Buyer property-only and redirect its index to property search; market benchmarks stay in the shared property model, not standalone segment navigation or catalogs.
+- Keep Buyer property-only without selected-listing comparison state or routes and redirect its index to property search; retain similar-property benchmarks in individual property insights.
 - Archive confirmed owner details and their snapshot ledger by property identity before switching, restoring a retained property's details when reselected so a different home never overwrites its records.
 - Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
 - Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.
