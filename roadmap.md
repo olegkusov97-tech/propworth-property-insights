@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Focused market comparisons
+- [x] Replace arbitrary segment grids with area and bedroom comparison modes using observed configurations.
+- [x] Add 2–3 segment detail comparison, real reference sale activity and filtered property links.
+- [x] Test comparison rules and verify both modes on mobile without changing property or owner screens.
 ## Connected research, buying and selling
 - [x] Replace buyer samples with the full historical CSV catalog and paginated search.
 - [x] Separate segment comparisons and add filtered View Properties links.

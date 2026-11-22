@@ -7,6 +7,7 @@ import { propertyInsights } from "@/lib/property";
 import { aed, getCommunity } from "@/lib/market";
 import { MonthlyLineChart } from "@/components/pw/monthly-line-chart";
 import { useState } from "react";
+import { MarketComparisonDetail } from "@/components/pw/market-comparison-detail";
 export const Route = createFileRoute("/buyer/compare")({
   validateSearch: (s: Record<string, unknown>) => ({ kind: String(s["kind"] ?? "markets"), ids: String(s["ids"] ?? "") }),
   head: () => buyerHead("Compare Liquidity Side by Side", "Compare two or three sample properties or market segments using consistent liquidity indicators."), component: Compare,
@@ -17,6 +18,7 @@ function Compare() {
   const search = Route.useSearch(), kind: ExploreKind = search.kind === "properties" ? "properties" : "markets";
   const items = comparisonIds(kind, search.ids).flatMap(id => { const item = findItem(kind, id); return item ? [item] : []; });
   const first = items[0];
+  if (search.kind !== "properties") return <><Button asChild variant="outline" size="sm"><Link to="/buyer/markets">Change selection</Link></Button>{items.length >= 2 ? <MarketComparisonDetail items={items} /> : <p>Select 2–3 segments in Markets to compare.</p>}</>;
   const values: { label: string; value: (item: ExploreItem) => string | number }[] = [
     { label: kind === "markets" ? "Market Liquidity" : "Property Liquidity", value: item => `${itemScore(item, kind)}/100` },
     ...(kind === "properties" ? [{ label: "Similar Properties", value: (item: ExploreItem) => `${itemInsights(item).market.liquidity}/100` }] : []),

@@ -2,6 +2,7 @@ import { buildings, emptyProperty, fromBuilding, propertyInsights, type Property
 import { communities, getCommunity, type PropertyType } from "./market";
 import { segmentName } from "./owner-history";
 import { initializeHistoricalListings, type HistoricalListing } from "./historical-listings";
+import { marketCohorts } from "./market-comparison";
 
 export type ExploreKind = "markets" | "properties";
 export interface ExploreItem {
@@ -20,13 +21,7 @@ function listingItem(row: HistoricalListing): ExploreItem {
       furnishing: row.furnishing || "Not specified", sourceAddress: row.address, sourceArea: row.area, sourceCity: row.city, sourceType: row.type,
       genericBenchmark: !areaIds[row.area] || !supportedTypes.some(t => t === row.type) } };
 }
-export const marketSegments: ExploreItem[] = communities.flatMap(c => supportedTypes.flatMap(type => [1, 2, 3, 4].flatMap(bedrooms => ["Ready", "Off-plan"].flatMap(status => priceBands.map((band, i) => {
-  const id = `${c.id}-${type.toLowerCase()}-${bedrooms}-${status.toLowerCase()}-${i}`;
-  // Neutral synthetic profile expresses the price band; never an individual listing.
-  const sizeSqft = Math.max(600, Math.min(8000, (band.min === 0 ? 750000 : band.min * 1.4) / c.avgPricePerSqft));
-  const property: PropertyDetails = { ...emptyProperty, communityId: c.id, propertyType: type, bedrooms, status: status === "Off-plan" ? "Off-plan" : "Ready", sizeSqft };
-  return { id, segmentId: id, name: `${c.name} · ${bedrooms}BR ${type}`, property, photo: "", priceBand: band };
-})))));
+export const marketSegments: ExploreItem[] = marketCohorts.map(c => ({ id: c.id, segmentId: c.id, name: c.name, property: c.property, photo: "" }));
 const legacyProperties: ExploreItem[] = buildings.map(b => ({ id: b.id, name: b.name, segmentId: "", photo: "", property: fromBuilding(b) }));
 const propertyById = new Map([...legacyProperties, ...sampleProperties].map(i => [i.id, i]));
 export function initializeBuyerCatalog(rows: HistoricalListing[]) {
@@ -61,7 +56,7 @@ export function parseBuyerFilters(s: Record<string, unknown>): Partial<BuyerFilt
 export function segmentFilters(item: ExploreItem): BuyerFilters {
   return { ...emptyBuyerFilters, community: getCommunity(item.property.communityId).name === "Jumeirah Village Circle" ? "Jumeirah Village Circle (JVC)" : getCommunity(item.property.communityId).name,
     type: item.property.propertyType, bedrooms: String(item.property.bedrooms), status: item.property.status,
-    minPrice: String(item.priceBand?.min ?? 0), maxPrice: String(item.priceBand?.max ?? 1000000000) };
+    minPrice: item.priceBand ? String(item.priceBand.min) : "", maxPrice: item.priceBand ? String(item.priceBand.max) : "" };
 }
 export function filterItems(items: ExploreItem[], f: BuyerFilters) {
   return items.filter(item => {

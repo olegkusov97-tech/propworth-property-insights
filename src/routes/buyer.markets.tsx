@@ -1,4 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BuyerExplorer } from "@/components/pw/buyer-explorer";
+import { MarketComparison } from "@/components/pw/market-comparison";
 import { buyerHead } from "@/components/pw/buyer-shell";
-export const Route = createFileRoute("/buyer/markets")({ head: () => buyerHead("Explore Market Liquidity", "Explore comparable Dubai property segments by demand, competition, sales and liquidity."), component: () => <BuyerExplorer kind="markets" /> });
+export const Route = createFileRoute("/buyer/markets")({ head: () => buyerHead("Compare Dubai Market Liquidity", "Compare Dubai areas and bedroom configurations using simulated liquidity and real uploaded DLD sale references."), component: MarketComparison });

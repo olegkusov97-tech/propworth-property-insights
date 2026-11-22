@@ -38,18 +38,21 @@ describe("Historical buyer catalog and segment research", () => {
   it("does not use a building-area field for unit-size filters", () => {
     expect(filterItems(sampleProperties, { ...emptyBuyerFilters, minSize: "200" })).toEqual([]);
   });
-  it("models markets as neutral segments with multiple areas, types, bedrooms and bands", () => {
+  it("models only observed Dubai market configurations without arbitrary price bands", () => {
     const rows = marketSegments.filter(s => s.property.communityId === "marina" && s.property.propertyType === "Apartment" && s.property.status === "Ready");
-    expect(new Set(rows.map(s => s.property.bedrooms))).toEqual(new Set([1,2,3,4]));
-    expect(new Set(rows.map(s => s.priceBand?.min))).toEqual(new Set([0,1000000,2000000,4000000]));
+    expect(new Set(rows.map(s => s.property.bedrooms))).toEqual(new Set([0,1,2,3,4,5]));
+    expect(marketSegments).toHaveLength(89);
+    expect(marketSegments.every(s => !s.priceBand)).toBe(true);
+    for (const segment of marketSegments) expect(filterItems(sampleProperties, segmentFilters(segment)).length).toBeGreaterThan(0);
     for (const item of rows) { expect(item.property.building).toBe(""); expect(item.listing).toBeUndefined(); expect(itemScore(item, "markets")).toBe(propertyInsights(item.property).market.liquidity); }
   });
-  it("passes a segment's area, type, bedrooms, status and price range to real property search", () => {
-    const segment = marketSegments.find(s => s.property.communityId === "marina" && s.property.propertyType === "Apartment" && s.property.bedrooms === 2 && s.property.status === "Ready" && s.priceBand?.min === 1000000);
+  it("passes a segment's area, type, bedrooms and status without invented price restrictions", () => {
+    const segment = marketSegments.find(s => s.property.communityId === "marina" && s.property.propertyType === "Apartment" && s.property.bedrooms === 2 && s.property.status === "Ready");
     if (!segment) throw new Error("Segment missing");
     const rows = filterItems(sampleProperties, segmentFilters(segment));
     expect(rows.length).toBeGreaterThan(0);
-    for (const item of rows) { expect(item.listing?.area).toBe("Dubai Marina"); expect(item.listing?.type).toBe("Apartment"); expect(item.property.bedrooms).toBe(2); expect(item.listing?.price).toBeGreaterThanOrEqual(1000000); expect(item.listing?.price).toBeLessThanOrEqual(2000000); }
+    expect(segmentFilters(segment).minPrice).toBe(""); expect(segmentFilters(segment).maxPrice).toBe("");
+    for (const item of rows) { expect(item.listing?.area).toBe("Dubai Marina"); expect(item.listing?.type).toBe("Apartment"); expect(item.property.bedrooms).toBe(2); expect(item.listing?.status).toBe("Ready"); }
   });
   it("reuses the homeowner score and saves the score at save time", () => {
     const item = sampleProperties[0]; if (!item) throw new Error("Missing source");

@@ -36,7 +36,8 @@ use the editor.
 - Derive homeowner segment indicators and activity from one price-independent mock model; ignore legacy asking premiums so unvalidated pricing predictions cannot reappear.
 - Retain closed homeowner monthly snapshots in a separate browser ledger and update only the current month; historical seed records use a fixed sample profile so edits never rewrite past scores.
 - Share the accessible monthly line chart between homeowner activity and liquidity history so tap, hover and keyboard month selection stay consistent.
-- Keep buyer catalog, filtering and comparison rules in a browser-safe adapter; market segments use neutral price-band profiles, while the historical catalog preserves every uploaded listing and original asking prices so research stays distinct from property search.
+- Keep buyer catalog rules in a browser-safe adapter and market comparison cohorts in a separate browser-safe module derived only from observed Dubai listing configurations, never Cartesian products or artificial price bands; this keeps research separate from property search.
+- Match market transaction activity by area, exact subtype, bedrooms and completion status without size restrictions; label the reference window and missing coverage separately from simulated scores so observed registrations never imply validated liquidity.
 - Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
 - Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.
 - Keep uploaded transaction references separate from simulated liquidity inputs; use deduplicated Sale registrations with explicit area/subtype/status/bedroom/size matching and disclose source units assumptions so real references never imply validated predictions.
