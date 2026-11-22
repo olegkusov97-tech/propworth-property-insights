@@ -38,6 +38,7 @@ use the editor.
 - Share the accessible monthly line chart between homeowner activity and liquidity history so tap, hover and keyboard month selection stay consistent.
 - Keep buyer catalog rules in a browser-safe adapter and market comparison cohorts in a separate browser-safe module derived only from observed Dubai listing configurations, never Cartesian products or artificial price bands; this keeps research separate from property search.
 - Match market transaction activity by area, exact subtype, bedrooms and completion status without size restrictions; label the reference window and missing coverage separately from simulated scores so observed registrations never imply validated liquidity.
+- Render Markets as one shared-scale interactive bar chart with segment actions in a focused readout, not repeated listing-like rows; reuse the detailed comparison for historical trends.
 - Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
 - Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.
 - Keep uploaded transaction references separate from simulated liquidity inputs; use deduplicated Sale registrations with explicit area/subtype/status/bedroom/size matching and disclose source units assumptions so real references never imply validated predictions.

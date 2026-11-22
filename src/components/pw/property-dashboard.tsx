@@ -43,9 +43,9 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
   const prevDemand = previousIndicators.demand;
   const prevCompetition = previousIndicators.competition;
   return <>
-    <Button asChild className="w-full"><Link to="/owner/sell">Sell My Property</Link></Button>
+    <div className="flex items-center justify-between gap-3 border-b pb-3" aria-label="Valuation summary"><div><p className="text-[10px] text-muted-foreground">Valuation by PropWorth</p><p className="font-display text-xl font-bold" data-testid="header-property-value">{aed(r.value)}</p><p className="text-[10px] text-muted-foreground">Estimated value · simulated</p></div><Button asChild variant="link" size="sm" className="shrink-0 px-0"><a href="#valuation">View Valuation</a></Button></div>
     {p.genericBenchmark && <p className="text-xs text-muted-foreground">Original listing: {p.sourceAddress} · {p.sourceType}. Analytics use a generic simulated benchmark, not evidence for this local market.</p>}
-    <div className="flex items-center justify-between gap-2"><span className="text-xs text-muted-foreground">{p.status} · {p.sizeSqft.toLocaleString()} sq ft</span><Button variant="outline" size="sm" onClick={onEdit}><Pencil /> Edit Property</Button></div>
+    <div className="flex justify-end"><Button variant="outline" size="sm" onClick={onEdit}><Pencil /> Edit Property</Button></div>
     <Card className="space-y-3">
       <div className="flex items-center gap-3"><div className="shrink-0"><Gauge value={property.liquidity} label="Liquidity Score" labelClassName="max-w-16 text-center leading-tight" /></div><div className="min-w-0"><h2 className="font-display text-xl font-bold">Property Liquidity</h2><p className="font-semibold text-primary" data-testid="saleability">{r.saleability} Liquidity</p><Change delta={liquidityDelta} unit="pts" /><span className="block text-[10px] text-muted-foreground">vs last month</span></div></div>
       <p className="text-xs text-muted-foreground">How easily your property could sell compared with similar homes.</p>
@@ -65,11 +65,12 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
     </div><p className="text-xs leading-relaxed" data-testid="monthly-meaning">{liquidityDelta > 1 ? "Selling conditions improved this month. " : liquidityDelta < -1 ? "Selling conditions softened this month. " : "Selling conditions stayed broadly stable. "}{insight}</p><p className="text-[10px] text-muted-foreground">Simulated data · changes compare monthly records.</p></section>
     <MarketActivity snapshots={snapshots} segment={segment} />
     <LiquidityHistory history={snapshots} />
-    <Card className="space-y-1"><h2 className="text-xs font-semibold text-muted-foreground">Estimated Value</h2><p className="font-display text-xl font-bold" data-testid="property-value">{aed(r.value)}</p><p className="text-[11px] text-muted-foreground">Indicative range {aed(r.value * .93)}–{aed(r.value * 1.07)}</p><p className="text-xs text-muted-foreground">AED {r.pricePerSqft.toLocaleString()}/sq ft · simulated</p></Card>
+    <div id="valuation" className="scroll-mt-32"><Card className="space-y-1"><h2 className="text-xs font-semibold text-muted-foreground">Estimated Value</h2><p className="font-display text-xl font-bold" data-testid="property-value">{aed(r.value)}</p><p className="text-[11px] text-muted-foreground">Indicative range {aed(r.value * .93)}–{aed(r.value * 1.07)}</p><p className="text-xs text-muted-foreground">AED {r.pricePerSqft.toLocaleString()}/sq ft · simulated</p></Card></div>
     {p.genericBenchmark ? <p className="text-xs text-muted-foreground">No area/type-matched transaction or listing references are shown for this generic benchmark.</p> : <><TransactionReferences property={p} /><ListingReferences property={p} /></>}
     <Card className="flex items-start gap-3 bg-secondary"><Bell className="mt-1 size-5 shrink-0 text-primary" /><div><p className="text-sm font-semibold">Monthly liquidity updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no notifications sent." : "Keep up with demand and liquidity. Demo only."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div></Card>
     <Button variant="link" className="w-full text-muted-foreground" onClick={onReplace}>Change property</Button>
     <Link to="/buyer" className="block text-center text-xs text-primary underline">Thinking of buying another? Open buyer tools</Link>
+    <Button asChild className="w-full"><Link to="/owner/sell">Sell My Property</Link></Button>
   </>;
 }
 function Change({ delta, unit, invert = false }: { delta: number; unit: string; invert?: boolean }) {

@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Chart-first Markets and owner header
+- [x] Replace market ranking rows and sorting with a single interactive horizontal comparison chart.
+- [x] Add live header valuation and valuation link; move selling to the dashboard bottom.
+- [x] Verify no old segment list on Markets, chart selection, property links and owner header on mobile.
 ## Focused market comparisons
 - [x] Replace arbitrary segment grids with area and bedroom comparison modes using observed configurations.
 - [x] Add 2–3 segment detail comparison, real reference sale activity and filtered property links.
