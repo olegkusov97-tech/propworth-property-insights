@@ -11,7 +11,7 @@ export function LiquidityHistory({ history }: { history: OwnerSnapshot[] }) {
   if (!row) return null;
   const prev = history[selected - 1];
   const delta = prev ? row.property - prev.property : null;
-  return <section className="space-y-3 py-2">
+  return <section className="liquidity-history-colors space-y-3 py-2">
     <h2 className="text-sm font-semibold">Liquidity History</h2>
     <div className="flex flex-wrap gap-1"><Button variant={showProperty ? "secondary" : "ghost"} size="sm" aria-pressed={showProperty} onClick={() => setShowProperty(!showProperty)}><span className="h-2 w-2 rounded-full bg-primary" />Your Property</Button><Button variant={showMarket ? "secondary" : "ghost"} size="sm" aria-pressed={showMarket} onClick={() => setShowMarket(!showMarket)}><span className="h-2 w-2 rounded-full bg-accent" />Similar Properties</Button></div>
     <MonthlyLineChart months={history.map(r => r.month)} series={[...(showProperty ? [{ key: "property", label: "Your Property", values: history.map(r => r.property) }] : []), ...(showMarket ? [{ key: "market", label: "Similar Properties", values: history.map(r => r.market), secondary: true }] : [])]} selected={selected} onSelect={setSelected} score />
