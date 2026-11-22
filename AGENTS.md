@@ -33,4 +33,6 @@ use the editor.
 - Keep homeowner characteristic-aware mock calculations in a browser-safe property model separate from shared community calculations, so buyer estimates remain unchanged.
 - Normalize extended owner details at the homeowner boundary to retain compatibility with properties created by the buyer journey and older local records.
 - Persist owner setup drafts and confirmed details in separate browser storage keys, so incomplete edits do not overwrite the active property.
-- Derive homeowner segment activity, monthly history and indicators from one price-independent mock model; apply subject characteristics and pricing only to property scores, so comparison records and market context remain stable.
+- Derive homeowner segment indicators and activity from one price-independent mock model; ignore legacy asking premiums so unvalidated pricing predictions cannot reappear.
+- Retain closed homeowner monthly snapshots in a separate browser ledger and update only the current month; historical seed records use a fixed sample profile so edits never rewrite past scores.
+- Share the accessible monthly line chart between homeowner activity and liquidity history so tap, hover and keyboard month selection stay consistent.

@@ -1,4 +1,9 @@
 # Homeowner improvements
+## Liquidity-first dashboard redesign
+- [x] Simplify liquidity, valuation and demand cards; remove pricing predictions and duplicated market sections.
+- [x] Add selectable market trends and two-line liquidity history with retained monthly snapshots.
+- [x] Verify consistency, interactions and mobile layouts; preserve other journeys.
+
 - [x] Add import, search, manual entry and disabled government option with a shared editable review.
 - [x] Persist all property details and unfinished setup locally; support editing existing properties.
 - [x] Add characteristic-aware valuation, comparison cohorts, market/property liquidity, saleability and price simulation.

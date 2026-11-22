@@ -6,7 +6,7 @@ describe("Homeowner property intelligence", () => {
   it("building selection changes valuation and liquidity, not only the title", () => {
     const a = propertyInsights(base), b = propertyInsights({ ...base, building: "Princess Tower" });
     expect(a.value).toBeGreaterThan(b.value);
-    expect(a.property.demand).toBeGreaterThan(b.property.demand);
+    expect(a.property.demand).toBe(b.property.demand);
     expect(a.property.liquidity).toBeGreaterThan(b.property.liquidity);
   });
   it.each([
@@ -17,23 +17,19 @@ describe("Homeowner property intelligence", () => {
     const before = propertyInsights(base), after = propertyInsights({ ...base, [key]: value });
     expect(after.value).not.toBe(before.value);
     // Demand is rounded to whole index points; floor may only alter the underlying adjustment.
-    if (key !== "floor") expect(after.property.demand).not.toBe(before.property.demand);
+    if (["sizeSqft", "bedrooms", "propertyType", "status"].includes(key)) expect(after.market).not.toEqual(before.market);
   });
   it("keeps market liquidity separate from property condition", () => {
     const a = propertyInsights(base), b = propertyInsights({ ...base, condition: "Needs renovation" });
     expect(a.market).toEqual(b.market);
     expect(a.property.liquidity).toBeGreaterThan(b.property.liquidity);
   });
-  it("asking premiums reduce demand and liquidity and increase competitive pressure", () => {
+  it("ignores legacy asking premiums across homeowner indicators and history", () => {
     const low = propertyInsights({ ...base, askingPremium: -10 }), high = propertyInsights({ ...base, askingPremium: 15 });
-    expect(low.property.demand).toBeGreaterThan(high.property.demand);
-    expect(low.property.liquidity).toBeGreaterThan(high.property.liquidity);
-    expect(low.property.competition).toBeLessThan(high.property.competition);
-    expect(low.askingPrice).toBe(Math.round(low.value * .9));
-    expect(high.askingPrice).toBe(Math.round(high.value * 1.15));
-    expect(low.value).toBe(high.value);
+    expect(low.property).toEqual(high.property);
     expect(low.market).toEqual(high.market);
-    expect(low.saleability).not.toBe(high.saleability);
+    expect(low.history).toEqual(high.history);
+    expect(low.value).toBe(high.value);
   });
   it("uses same community, type, bedrooms, status and sizes within 25% for comparisons", () => {
     const result = propertyInsights({ ...base, status: "Off-plan" });
@@ -106,13 +102,8 @@ describe("Homeowner property intelligence", () => {
     expect(b.communityMarket).toEqual(a.communityMarket); expect(b.signals).toEqual(a.signals);
     expect(b.comparables).toEqual(a.comparables);
     expect(b.history.map(h => h.market)).toEqual(a.history.map(h => h.market));
-    expect(b.history.map(h => h.property)).not.toEqual(a.history.map(h => h.property));
-  });
-  it("reconciles characteristics and pricing contributions to the exact property-market gap", () => {
-    const r = propertyInsights({ ...base, condition: "Renovated", askingPremium: 5 });
-    expect(r.scoreReasons.characteristics).toBeGreaterThan(0);
-    expect(r.scoreReasons.pricing).toBeLessThan(0);
-    expect(r.scoreReasons.characteristics + r.scoreReasons.pricing).toBe(r.property.liquidity - r.market.liquidity);
+    expect(b.history.slice(0, -1)).toEqual(a.history.slice(0, -1));
+    expect(b.property.liquidity).not.toBe(a.property.liquidity);
   });
   it("uses named buildings, concrete transaction dates and consistent price per sqft", () => {
     const r = propertyInsights(base);

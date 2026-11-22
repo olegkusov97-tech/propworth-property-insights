@@ -1,32 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "./ui";
+import type { OwnerSnapshot } from "@/lib/owner-history";
+import { MonthlyLineChart } from "./monthly-line-chart";
 
-export function LiquidityHistory({ history }: { history: { month: string; property: number; market: number }[] }) {
+export function LiquidityHistory({ history }: { history: OwnerSnapshot[] }) {
   const [selected, setSelected] = useState(history.length - 1);
+  const [showProperty, setShowProperty] = useState(true);
+  const [showMarket, setShowMarket] = useState(true);
   const row = history[selected];
   if (!row) return null;
   const prev = history[selected - 1];
   const delta = prev ? row.property - prev.property : null;
-  return <Card>
+  return <section className="space-y-3 py-2">
     <h2 className="text-sm font-semibold">Liquidity History</h2>
-    <div className="mt-3 flex items-start justify-between gap-3" aria-live="polite">
-      <div><p className="text-sm font-semibold" data-testid="history-month">{row.month}</p><p className="text-xs text-muted-foreground">{delta === null ? "Start of displayed history" : `${delta > 0 ? "+" : ""}${delta} pts vs previous month`}</p></div>
-      <div className="text-right"><p className="text-sm">Property <b data-testid="history-score">{row.property}/100</b></p><p className="text-xs text-muted-foreground">Market segment {row.market}/100</p></div>
-    </div>
-    <div className="mt-4 flex gap-2">
-      <div className="flex h-40 w-6 shrink-0 flex-col justify-between text-[10px] text-muted-foreground"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
-      <div className="relative min-w-0 flex-1">
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex h-40 flex-col justify-between" aria-hidden="true">{[100, 75, 50, 25, 0].map(v => <div key={v} className="border-t border-dashed border-border" />)}</div>
-        <div className="relative grid grid-cols-12 gap-0.5">
-          {history.map((entry, i) => <Button key={entry.month} variant="ghost" aria-label={`${entry.month}: Property Liquidity ${entry.property}, Market Liquidity ${entry.market}`} aria-pressed={selected === i} title={`${entry.month}: Property ${entry.property}/100 · Market ${entry.market}/100`} className={`h-auto min-w-0 flex-col justify-start gap-0 rounded-sm p-0 hover:bg-muted ${selected === i ? "ring-1 ring-ring" : ""}`} onClick={() => setSelected(i)}>
-            <span className="relative flex h-40 w-full items-end justify-center gap-px px-0.5"><span className="w-1/2 rounded-t-sm bg-primary" style={{ height: `${entry.property}%` }} /><span className="w-1/2 rounded-t-sm bg-accent" style={{ height: `${entry.market}%` }} /></span>
-            <span className="py-2 text-[9px] font-normal text-muted-foreground">{entry.month.slice(0, 3)}</span>
-          </Button>)}
-        </div>
-      </div>
-    </div>
-    <div className="mt-2 flex flex-wrap gap-4 text-[11px] text-muted-foreground"><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-primary" />Property Liquidity</span><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-accent" />Market segment</span></div>
-    <p className="mt-2 text-[11px] text-muted-foreground">Dec 2025–Nov 2026 · simulated monthly snapshots. Property history holds your current details and asking premium constant; market history is unaffected by your asking price.</p>
-  </Card>;
+    <div className="flex flex-wrap gap-1"><Button variant={showProperty ? "secondary" : "ghost"} size="sm" aria-pressed={showProperty} onClick={() => setShowProperty(!showProperty)}><span className="h-2 w-2 rounded-full bg-primary" />Your Property</Button><Button variant={showMarket ? "secondary" : "ghost"} size="sm" aria-pressed={showMarket} onClick={() => setShowMarket(!showMarket)}><span className="h-2 w-2 rounded-full bg-accent" />Similar Properties</Button></div>
+    <MonthlyLineChart months={history.map(r => r.month)} series={[...(showProperty ? [{ key: "property", label: "Your Property", values: history.map(r => r.property) }] : []), ...(showMarket ? [{ key: "market", label: "Similar Properties", values: history.map(r => r.market), secondary: true }] : [])]} selected={selected} onSelect={setSelected} score />
+    <div aria-live="polite" className="border-t pt-3"><p className="text-xs font-semibold" data-testid="history-month">{row.month}</p><div className="mt-2 grid grid-cols-2 gap-3 text-xs"><div>Your Property <b className="block text-lg text-primary" data-testid="history-score">{row.property}/100</b><span className="text-muted-foreground">{delta === null ? "First snapshot" : `${delta > 0 ? "+" : ""}${delta} pts vs previous month`}</span></div><div>Similar Properties <b className="block text-lg text-accent">{row.market}/100</b><span className="text-muted-foreground">{prev ? `${row.market - prev.market > 0 ? "+" : ""}${row.market - prev.market} pts vs previous month` : "First snapshot"}</span></div></div></div>
+    <p className="text-[10px] text-muted-foreground">Simulated monthly records · past snapshots retain the details recorded at that time.</p>
+  </section>;
 }

@@ -1,5 +1,6 @@
 import { communities, getCommunity, type Community, type PropertyType } from "./market";
 import type { OwnedProperty } from "./store";
+import { segmentName, type OwnerSnapshot } from "./owner-history";
 
 export interface PropertyDetails extends OwnedProperty {
   building: string; propertyType: PropertyType; status: "Ready" | "Off-plan";
@@ -79,17 +80,20 @@ export function scoreMarket(activity: MarketActivity) {
   return { ...activity, demand, competition, liquidity };
 }
 function marketSnapshot(c: Community, monthsAgo = 0) {
+  // Two summer records deliberately stay stable; other months include seasonal reversals.
+  if (monthsAgo === 4) monthsAgo = 3;
   const shifts: Record<string, [number, number, number]> = {
     marina: [.064, -.035, .047], jvc: [.042, .061, .032], dhills: [.081, -.047, .065],
     springs: [.035, -.026, .041], dsc: [-.022, .072, -.031],
   };
   const [d, s, t] = shifts[c.id] ?? [.03, .02, .025];
+  const season = [1, 1, .90, 1.12, 1.12, .94, 1.16, .98, 1.12, .88, 1.14, 1.04][monthsAgo] ?? 1;
   return scoreMarket({
-    searches: Math.round(c.searches / Math.pow(1 + d, monthsAgo)),
-    saves: Math.round(c.saves / Math.pow(1 + d * 1.2, monthsAgo)),
-    enquiries: Math.round(c.enquiries / Math.pow(1 + d * .85, monthsAgo)),
-    listings: Math.round(c.activeListings / Math.pow(1 + s, monthsAgo)),
-    sales90d: Math.round(c.transactions90d / Math.pow(1 + t, monthsAgo)),
+    searches: Math.round(c.searches / Math.pow(1 + d, monthsAgo) * season),
+    saves: Math.round(c.saves / Math.pow(1 + d * 1.2, monthsAgo) * season),
+    enquiries: Math.round(c.enquiries / Math.pow(1 + d * .85, monthsAgo) * season),
+    listings: Math.round(c.activeListings / Math.pow(1 + s, monthsAgo) / season),
+    sales90d: Math.round(c.transactions90d / Math.pow(1 + t, monthsAgo) * season),
     days: Math.max(14, c.avgDaysOnMarket + Math.round(d * 45 * monthsAgo)),
   });
 }
@@ -144,30 +148,10 @@ export function propertyInsights(input: OwnedProperty) {
   const value = Math.round(pricePerSqft * p.sizeSqft / 1000) * 1000;
   const communityMarket = marketSnapshot(c), previousCommunityMarket = marketSnapshot(c, 1);
   const market = segmentSnapshot(p, c), previousMarket = segmentSnapshot(p, c, 1);
-  const characteristicFactors = [
-    { label: "Building", detail: building ? `${building.name}'s mock buyer appeal relative to the segment` : "No building-specific buyer adjustment available", appeal: building ? (building.priceFactor - type) * 18 : 0 },
-    { label: "View", detail: p.view, appeal: (p.view === "Sea / marina" ? .09 : p.view === "Garden" ? .035 : p.view === "Road" ? -.045 : 0) * 100 },
-    { label: "Condition", detail: p.condition, appeal: p.condition === "Renovated" ? 7 : p.condition === "Needs renovation" ? -10 : 0 },
-    { label: "Furnishing", detail: p.furnishing, appeal: p.furnishing === "Furnished" ? 2.5 : p.furnishing === "Part furnished" ? 1 : 0 },
-    { label: "Balcony", detail: p.balcony, appeal: p.balcony === "Yes" ? 2 : p.balcony === "No" ? -2 : 0 },
-    { label: "Parking", detail: p.parking === null ? "Not specified" : `${p.parking} spaces`, appeal: p.parking === null ? 0 : p.parking === 0 ? -3.5 : Math.min(p.parking, 3) * 1.2 },
-    { label: "Floor", detail: p.floor === null ? "Not specified" : `Floor ${p.floor}`, appeal: p.propertyType === "Apartment" && p.floor !== null ? Math.min(p.floor, 40) * .1 : 0 },
-  ];
-  const appeal = characteristicFactors.reduce((sum, factor) => sum + factor.appeal, 0);
-  const atPrice = (m: ReturnType<typeof scoreMarket>, adjustment = appeal, premium = p.askingPremium) => {
-    const demand = Math.round(clamp(m.demand + adjustment - premium * 1.8));
-    const competition = Math.round(clamp(m.competition - adjustment * .3 + premium * 1.2));
-    const days = Math.max(14, Math.round(m.days - adjustment * .6 + premium * 2));
-    const liquidity = Math.round(clamp(demand * .45 + (100 - competition) * .3 + clamp(100 - days) * .25));
-    return { demand, competition, days, liquidity };
-  };
-  const property = atPrice(market), previousProperty = atPrice(previousMarket);
-  const unpricedProperty = atPrice(market, appeal, 0);
-  const scoreReasons = {
-    characteristics: unpricedProperty.liquidity - market.liquidity,
-    pricing: property.liquidity - unpricedProperty.liquidity,
-    total: property.liquidity - market.liquidity,
-  };
+  // Illustrative relative positioning only; legacy asking premiums are deliberately ignored.
+  const appeal = q * 100 + (building ? (building.priceFactor - type) * 18 : 0);
+  const property = { demand: market.demand, competition: market.competition,
+    liquidity: Math.round(clamp(market.liquidity + appeal * .65)) };
   // Comparable records use segment-level pricing, never the subject's quality or asking price.
   const segmentPricePerSqft = c.avgPricePerSqft * type * sizeFactor * bedroomFactor * (p.status === "Off-plan" ? .92 : 1);
   const matchingBuildings = buildings.filter(b => b.communityId === p.communityId && b.type === p.propertyType && b.status === p.status);
@@ -188,15 +172,18 @@ export function propertyInsights(input: OwnedProperty) {
     };
   });
   const signals = { searches: market.searches, saves: market.saves, enquiries: market.enquiries, listings: market.listings, sales90d: market.sales90d };
-  const history = liquidityMonths.map((month, i) => {
+  // Seeded sample records use a fixed historical property profile, never today's optional details.
+  const historicalGaps = [2, 3, 2, 4, 4, 1, 3, 2, 4, 3, 3, 0];
+  const snapshots: OwnerSnapshot[] = liquidityMonths.map((month, i) => {
     const snapshot = segmentSnapshot(p, c, 11 - i);
-    return { month, market: snapshot.liquidity, property: atPrice(snapshot).liquidity };
+    return { ...snapshot, month, market: snapshot.liquidity,
+      property: i === 11 ? property.liquidity : Math.round(clamp(snapshot.liquidity + (historicalGaps[i] ?? 3))),
+      segment: segmentName(p, c.name) };
   });
-  const liquidityHistory = history.map(row => row.property);
-  const valueHistory = Array.from({ length: 12 }, (_, i) => value * (1 - (11 - i) * .006));
+  const previousProperty = { liquidity: snapshots[10]?.property ?? property.liquidity };
+  const history = snapshots.map(({ month, market, property }) => ({ month, market, property }));
   return { p, c, value, pricePerSqft, market, previousMarket, property, previousProperty,
-    comparables, signals, liquidityHistory, history, valueHistory, matchedBuilding: Boolean(building),
-    communityMarket, previousCommunityMarket, characteristicFactors, scoreReasons,
-    monthlyUpdate: monthlyMeaning(market, previousMarket),
-    askingPrice: Math.round(value * (1 + p.askingPremium / 100)), saleability: saleability(property.liquidity) };
+    comparables, signals, history, snapshots, liquidityHistory: history.map(row => row.property),
+    matchedBuilding: Boolean(building), communityMarket, previousCommunityMarket,
+    saleability: saleability(property.liquidity) };
 }

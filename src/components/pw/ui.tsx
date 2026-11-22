@@ -23,7 +23,7 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   return <section className={`rounded-2xl border bg-card p-4 shadow-card ${className}`}>{children}</section>;
 }
 
-export function Gauge({ value, label }: { value: number; label: string }) {
+export function Gauge({ value, label, labelClassName = "uppercase" }: { value: number; label: string; labelClassName?: string }) {
   const c = 2 * Math.PI * 42;
   return (
     <div className="relative h-28 w-28">
@@ -33,7 +33,7 @@ export function Gauge({ value, label }: { value: number; label: string }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-display text-3xl font-bold">{value}</span>
-        <span className="text-[10px] font-semibold uppercase text-muted-foreground">{label}</span>
+        <span className={`text-[10px] font-semibold text-muted-foreground ${labelClassName}`}>{label}</span>
       </div>
     </div>
   );
