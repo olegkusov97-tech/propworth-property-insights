@@ -1,4 +1,9 @@
 # Homeowner improvements
+## Properties-only Buyer and safe property switching
+- [x] Remove Markets screens, navigation, saved segments and comparisons; open Buyer directly in Properties.
+- [x] Change the owner action to property selection while preserving previous property data and snapshots.
+- [x] Open the confirmed Property Finder home-value-estimator website in a new tab.
+- [x] Verify property search, saving, comparison, buying and owner switching on mobile.
 ## Chart-first Markets and owner header
 - [x] Replace market ranking rows and sorting with a single interactive horizontal comparison chart.
 - [x] Add live header valuation and valuation link; move selling to the dashboard bottom.

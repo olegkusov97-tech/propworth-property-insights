@@ -2,16 +2,14 @@ import { buildings, emptyProperty, fromBuilding, propertyInsights, type Property
 import { communities, getCommunity, type PropertyType } from "./market";
 import { segmentName } from "./owner-history";
 import { initializeHistoricalListings, type HistoricalListing } from "./historical-listings";
-import { marketCohorts } from "./market-comparison";
 
-export type ExploreKind = "markets" | "properties";
+export type ExploreKind = "properties";
 export interface ExploreItem {
   id: string; property: PropertyDetails; name: string; segmentId: string; photo: string;
   listing?: HistoricalListing; priceBand?: { min: number; max: number; label: string };
 }
 const areaIds: Record<string, string> = { "Jumeirah Village Circle (JVC)": "jvc", "Dubai Marina": "marina", "Dubai Hills Estate": "dhills", "The Springs": "springs", "Dubai Sports City": "dsc", "Al Reem Island": "reem", "Yas Island": "yas", "Aljada": "aljada" };
 export const supportedTypes = ["Apartment", "Villa", "Townhouse"] as const;
-export const priceBands = [{ min: 0, max: 1000000, label: "Under AED 1M" }, { min: 1000000, max: 2000000, label: "AED 1M–2M" }, { min: 2000000, max: 4000000, label: "AED 2M–4M" }, { min: 4000000, max: 1000000000, label: "AED 4M+" }];
 export const sampleProperties: ExploreItem[] = [];
 function listingItem(row: HistoricalListing): ExploreItem {
   const type = supportedTypes.find(t => t === row.type) ?? "Apartment";
@@ -21,7 +19,6 @@ function listingItem(row: HistoricalListing): ExploreItem {
       furnishing: row.furnishing || "Not specified", sourceAddress: row.address, sourceArea: row.area, sourceCity: row.city, sourceType: row.type,
       genericBenchmark: !areaIds[row.area] || !supportedTypes.some(t => t === row.type) } };
 }
-export const marketSegments: ExploreItem[] = marketCohorts.map(c => ({ id: c.id, segmentId: c.id, name: c.name, property: c.property, photo: "" }));
 const legacyProperties: ExploreItem[] = buildings.map(b => ({ id: b.id, name: b.name, segmentId: "", photo: "", property: fromBuilding(b) }));
 const propertyById = new Map([...legacyProperties, ...sampleProperties].map(i => [i.id, i]));
 export function initializeBuyerCatalog(rows: HistoricalListing[]) {
@@ -29,9 +26,8 @@ export function initializeBuyerCatalog(rows: HistoricalListing[]) {
   initializeHistoricalListings(rows);
   for (const row of rows) { const item = listingItem(row); sampleProperties.push(item); propertyById.set(item.id, item); }
 }
-const segmentById = new Map(marketSegments.map(i => [i.id, i]));
-export const itemsFor = (kind: ExploreKind) => kind === "markets" ? marketSegments : sampleProperties;
-export const findItem = (kind: ExploreKind, id: string) => kind === "markets" ? segmentById.get(id) : propertyById.get(id);
+export const itemsFor = (kind: ExploreKind) => sampleProperties;
+export const findItem = (kind: ExploreKind, id: string) => propertyById.get(id);
 const insightCache = new WeakMap<ExploreItem, ReturnType<typeof propertyInsights>>();
 const profileCache = new Map<string, ReturnType<typeof propertyInsights>>();
 export function itemInsights(item: ExploreItem) {
@@ -42,7 +38,7 @@ export function itemInsights(item: ExploreItem) {
   const r = profileCache.get(key) ?? propertyInsights(p);
   profileCache.set(key, r); insightCache.set(item, r); return r;
 }
-export function itemScore(item: ExploreItem, kind: ExploreKind) { const r = itemInsights(item); return kind === "markets" ? r.market.liquidity : r.property.liquidity; }
+export function itemScore(item: ExploreItem, kind: ExploreKind) { const r = itemInsights(item); return r.property.liquidity; }
 export function itemPrice(item: ExploreItem) { return item.listing?.price ?? itemInsights(item).value; }
 export function itemArea(item: ExploreItem) { return item.listing?.area ?? getCommunity(item.property.communityId).name; }
 export function itemSegment(item: ExploreItem) {
@@ -52,11 +48,6 @@ export interface BuyerFilters { community: string; type: string; bedrooms: strin
 export const emptyBuyerFilters: BuyerFilters = { community: "", type: "", bedrooms: "", status: "", minSize: "", maxSize: "", minPrice: "", maxPrice: "", search: "" };
 export function parseBuyerFilters(s: Record<string, unknown>): Partial<BuyerFilters> {
   return Object.fromEntries(Object.keys(emptyBuyerFilters).filter(key => typeof s[key] === "string" && s[key]).map(key => [key, s[key]])) as Partial<BuyerFilters>;
-}
-export function segmentFilters(item: ExploreItem): BuyerFilters {
-  return { ...emptyBuyerFilters, community: getCommunity(item.property.communityId).name === "Jumeirah Village Circle" ? "Jumeirah Village Circle (JVC)" : getCommunity(item.property.communityId).name,
-    type: item.property.propertyType, bedrooms: String(item.property.bedrooms), status: item.property.status,
-    minPrice: item.priceBand ? String(item.priceBand.min) : "", maxPrice: item.priceBand ? String(item.priceBand.max) : "" };
 }
 export function filterItems(items: ExploreItem[], f: BuyerFilters) {
   return items.filter(item => {
@@ -77,6 +68,9 @@ export function sortItems(items: ExploreItem[], sort: string, kind: ExploreKind)
 }
 export function toggleComparison(ids: string[], id: string) { return ids.includes(id) ? ids.filter(value => value !== id) : ids.length < 3 ? [...ids, id] : ids; }
 export interface SavedLiquidity { id: string; kind: ExploreKind; score: number; savedAt: string }
+export function propertyWatchlist(saved: { id: string; kind: string; score: number; savedAt: string }[]): SavedLiquidity[] {
+  return saved.filter((s): s is SavedLiquidity => s.kind === "properties");
+}
 export function toggleSaved(saved: SavedLiquidity[], item: ExploreItem, kind: ExploreKind): SavedLiquidity[] {
   return saved.some(s => s.id === item.id && s.kind === kind) ? saved.filter(s => s.id !== item.id || s.kind !== kind) : [...saved, { id: item.id, kind, score: itemScore(item, kind), savedAt: new Date().toISOString() }];
 }

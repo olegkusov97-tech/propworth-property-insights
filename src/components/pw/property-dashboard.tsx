@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowDownRight, ArrowUpRight, Bell, BellOff, Minus, Pencil } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Bell, BellOff, Minus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, Gauge, Meter } from "./ui";
 import { propertyInsights, scoreMarket, type PropertyDetails } from "@/lib/property";
@@ -43,9 +43,9 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
   const prevDemand = previousIndicators.demand;
   const prevCompetition = previousIndicators.competition;
   return <>
-    <div className="flex items-center justify-between gap-3 border-b pb-3" aria-label="Valuation summary"><div><p className="text-[10px] text-muted-foreground">Valuation by PropWorth</p><p className="font-display text-xl font-bold" data-testid="header-property-value">{aed(r.value)}</p><p className="text-[10px] text-muted-foreground">Estimated value · simulated</p></div><Button asChild variant="link" size="sm" className="shrink-0 px-0"><a href="#valuation">View Valuation</a></Button></div>
+    <div className="flex items-center justify-between gap-3 border-b pb-3" aria-label="Valuation summary"><div><p className="text-[10px] text-muted-foreground">Valuation by PropWorth</p><p className="font-display text-xl font-bold" data-testid="header-property-value">{aed(r.value)}</p><p className="text-[10px] text-muted-foreground">Estimated value · simulated</p></div><Button asChild variant="link" size="sm" className="shrink-0 px-0"><a href="https://www.propertyfinder.ae/en/tools/home-value-estimator" target="_blank" rel="noopener noreferrer">View Valuation</a></Button></div>
     {p.genericBenchmark && <p className="text-xs text-muted-foreground">Original listing: {p.sourceAddress} · {p.sourceType}. Analytics use a generic simulated benchmark, not evidence for this local market.</p>}
-    <div className="flex justify-end"><Button variant="outline" size="sm" onClick={onEdit}><Pencil /> Edit Property</Button></div>
+    <div className="flex justify-end"><Button variant="outline" size="sm" onClick={onEdit}><Search /> Change Property</Button></div>
     <Card className="space-y-3">
       <div className="flex items-center gap-3"><div className="shrink-0"><Gauge value={property.liquidity} label="Liquidity Score" labelClassName="max-w-16 text-center leading-tight" /></div><div className="min-w-0"><h2 className="font-display text-xl font-bold">Property Liquidity</h2><p className="font-semibold text-primary" data-testid="saleability">{r.saleability} Liquidity</p><Change delta={liquidityDelta} unit="pts" /><span className="block text-[10px] text-muted-foreground">vs last month</span></div></div>
       <p className="text-xs text-muted-foreground">How easily your property could sell compared with similar homes.</p>

@@ -14,11 +14,9 @@ import { Route as BuyerRouteImport } from './routes/buyer'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as BuyerIndexRouteImport } from './routes/buyer.index'
 import { Route as BuyerCompareRouteImport } from './routes/buyer.compare'
-import { Route as BuyerMarketsRouteImport } from './routes/buyer.markets'
 import { Route as BuyerPlanRouteImport } from './routes/buyer.plan'
 import { Route as BuyerPropertiesRouteImport } from './routes/buyer.properties'
 import { Route as OwnerSellRouteImport } from './routes/owner_.sell'
-import { Route as BuyerMarketsIdRouteImport } from './routes/buyer.markets_.$id'
 import { Route as BuyerPropertiesIdRouteImport } from './routes/buyer.properties_.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -46,11 +44,6 @@ const BuyerCompareRoute = BuyerCompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => BuyerRoute,
 } as any)
-const BuyerMarketsRoute = BuyerMarketsRouteImport.update({
-  id: '/markets',
-  path: '/markets',
-  getParentRoute: () => BuyerRoute,
-} as any)
 const BuyerPlanRoute = BuyerPlanRouteImport.update({
   id: '/plan',
   path: '/plan',
@@ -66,11 +59,6 @@ const OwnerSellRoute = OwnerSellRouteImport.update({
   path: '/owner/sell',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BuyerMarketsIdRoute = BuyerMarketsIdRouteImport.update({
-  id: '/markets_/$id',
-  path: '/markets/$id',
-  getParentRoute: () => BuyerRoute,
-} as any)
 const BuyerPropertiesIdRoute = BuyerPropertiesIdRouteImport.update({
   id: '/properties_/$id',
   path: '/properties/$id',
@@ -82,24 +70,20 @@ export interface FileRoutesByFullPath {
   '/buyer': typeof BuyerRouteWithChildren
   '/owner': typeof OwnerRoute
   '/buyer/compare': typeof BuyerCompareRoute
-  '/buyer/markets': typeof BuyerMarketsRoute
   '/buyer/plan': typeof BuyerPlanRoute
   '/buyer/properties': typeof BuyerPropertiesRoute
   '/owner/sell': typeof OwnerSellRoute
   '/buyer/': typeof BuyerIndexRoute
-  '/buyer/markets/$id': typeof BuyerMarketsIdRoute
   '/buyer/properties/$id': typeof BuyerPropertiesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/owner': typeof OwnerRoute
   '/buyer/compare': typeof BuyerCompareRoute
-  '/buyer/markets': typeof BuyerMarketsRoute
   '/buyer/plan': typeof BuyerPlanRoute
   '/buyer/properties': typeof BuyerPropertiesRoute
   '/owner/sell': typeof OwnerSellRoute
   '/buyer': typeof BuyerIndexRoute
-  '/buyer/markets/$id': typeof BuyerMarketsIdRoute
   '/buyer/properties/$id': typeof BuyerPropertiesIdRoute
 }
 export interface FileRoutesById {
@@ -108,12 +92,10 @@ export interface FileRoutesById {
   '/buyer': typeof BuyerRouteWithChildren
   '/owner': typeof OwnerRoute
   '/buyer/compare': typeof BuyerCompareRoute
-  '/buyer/markets': typeof BuyerMarketsRoute
   '/buyer/plan': typeof BuyerPlanRoute
   '/buyer/properties': typeof BuyerPropertiesRoute
   '/owner_/sell': typeof OwnerSellRoute
   '/buyer/': typeof BuyerIndexRoute
-  '/buyer/markets_/$id': typeof BuyerMarketsIdRoute
   '/buyer/properties_/$id': typeof BuyerPropertiesIdRoute
 }
 export interface FileRouteTypes {
@@ -123,24 +105,20 @@ export interface FileRouteTypes {
     | '/buyer'
     | '/owner'
     | '/buyer/compare'
-    | '/buyer/markets'
     | '/buyer/plan'
     | '/buyer/properties'
     | '/owner/sell'
     | '/buyer/'
-    | '/buyer/markets/$id'
     | '/buyer/properties/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/owner'
     | '/buyer/compare'
-    | '/buyer/markets'
     | '/buyer/plan'
     | '/buyer/properties'
     | '/owner/sell'
     | '/buyer'
-    | '/buyer/markets/$id'
     | '/buyer/properties/$id'
   id:
     | '__root__'
@@ -148,12 +126,10 @@ export interface FileRouteTypes {
     | '/buyer'
     | '/owner'
     | '/buyer/compare'
-    | '/buyer/markets'
     | '/buyer/plan'
     | '/buyer/properties'
     | '/owner_/sell'
     | '/buyer/'
-    | '/buyer/markets_/$id'
     | '/buyer/properties_/$id'
   fileRoutesById: FileRoutesById
 }
@@ -201,13 +177,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuyerCompareRouteImport
       parentRoute: typeof BuyerRoute
     }
-    '/buyer/markets': {
-      id: '/buyer/markets'
-      path: '/markets'
-      fullPath: '/buyer/markets'
-      preLoaderRoute: typeof BuyerMarketsRouteImport
-      parentRoute: typeof BuyerRoute
-    }
     '/buyer/plan': {
       id: '/buyer/plan'
       path: '/plan'
@@ -229,13 +198,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerSellRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buyer/markets_/$id': {
-      id: '/buyer/markets_/$id'
-      path: '/markets/$id'
-      fullPath: '/buyer/markets/$id'
-      preLoaderRoute: typeof BuyerMarketsIdRouteImport
-      parentRoute: typeof BuyerRoute
-    }
     '/buyer/properties_/$id': {
       id: '/buyer/properties_/$id'
       path: '/properties/$id'
@@ -248,21 +210,17 @@ declare module '@tanstack/react-router' {
 
 interface BuyerRouteChildren {
   BuyerCompareRoute: typeof BuyerCompareRoute
-  BuyerMarketsRoute: typeof BuyerMarketsRoute
   BuyerPlanRoute: typeof BuyerPlanRoute
   BuyerPropertiesRoute: typeof BuyerPropertiesRoute
   BuyerIndexRoute: typeof BuyerIndexRoute
-  BuyerMarketsIdRoute: typeof BuyerMarketsIdRoute
   BuyerPropertiesIdRoute: typeof BuyerPropertiesIdRoute
 }
 
 const BuyerRouteChildren: BuyerRouteChildren = {
   BuyerCompareRoute: BuyerCompareRoute,
-  BuyerMarketsRoute: BuyerMarketsRoute,
   BuyerPlanRoute: BuyerPlanRoute,
   BuyerPropertiesRoute: BuyerPropertiesRoute,
   BuyerIndexRoute: BuyerIndexRoute,
-  BuyerMarketsIdRoute: BuyerMarketsIdRoute,
   BuyerPropertiesIdRoute: BuyerPropertiesIdRoute,
 }
 

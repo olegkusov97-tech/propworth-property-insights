@@ -1,13 +1,17 @@
 import { fetchHistoricalListings } from "@/lib/historical-listings";
 import { initializeBuyerCatalog } from "@/lib/buyer-liquidity";
 import { beforeAll, describe, expect, it } from "vitest";
-import { sampleProperties, marketSegments, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, segmentFilters, toggleComparison, comparisonIds, toggleSaved } from "@/lib/buyer-liquidity";
+import { sampleProperties, filterItems, emptyBuyerFilters, itemScore, itemPrice, sortItems, toggleComparison, comparisonIds, toggleSaved, propertyWatchlist } from "@/lib/buyer-liquidity";
 import { propertyInsights } from "@/lib/property";
 import { historicalListings } from "@/lib/historical-listings";
 
 beforeAll(async () => { initializeBuyerCatalog(await fetchHistoricalListings("http://localhost:8080")); }, 60000);
 
-describe("Historical buyer catalog and segment research", () => {
+describe("Historical buyer property catalog", () => {
+  it("removes saved market segments while retaining exact saved property scores and dates", () => {
+    const property = { id: "bayut-1", kind: "properties", score: 58, savedAt: "2026-11-22T11:00:00Z" };
+    expect(propertyWatchlist([{ id: "market-marina", kind: "markets", score: 52, savedAt: property.savedAt }, property])).toEqual([property]);
+  });
   it("imports all 41,381 original CSV records rather than a replacement sample", () => {
     expect(sampleProperties).toHaveLength(41381);
     expect(historicalListings).toHaveLength(41381);
@@ -37,22 +41,6 @@ describe("Historical buyer catalog and segment research", () => {
   });
   it("does not use a building-area field for unit-size filters", () => {
     expect(filterItems(sampleProperties, { ...emptyBuyerFilters, minSize: "200" })).toEqual([]);
-  });
-  it("models only observed Dubai market configurations without arbitrary price bands", () => {
-    const rows = marketSegments.filter(s => s.property.communityId === "marina" && s.property.propertyType === "Apartment" && s.property.status === "Ready");
-    expect(new Set(rows.map(s => s.property.bedrooms))).toEqual(new Set([0,1,2,3,4,5]));
-    expect(marketSegments).toHaveLength(89);
-    expect(marketSegments.every(s => !s.priceBand)).toBe(true);
-    for (const segment of marketSegments) expect(filterItems(sampleProperties, segmentFilters(segment)).length).toBeGreaterThan(0);
-    for (const item of rows) { expect(item.property.building).toBe(""); expect(item.listing).toBeUndefined(); expect(itemScore(item, "markets")).toBe(propertyInsights(item.property).market.liquidity); }
-  });
-  it("passes a segment's area, type, bedrooms and status without invented price restrictions", () => {
-    const segment = marketSegments.find(s => s.property.communityId === "marina" && s.property.propertyType === "Apartment" && s.property.bedrooms === 2 && s.property.status === "Ready");
-    if (!segment) throw new Error("Segment missing");
-    const rows = filterItems(sampleProperties, segmentFilters(segment));
-    expect(rows.length).toBeGreaterThan(0);
-    expect(segmentFilters(segment).minPrice).toBe(""); expect(segmentFilters(segment).maxPrice).toBe("");
-    for (const item of rows) { expect(item.listing?.area).toBe("Dubai Marina"); expect(item.listing?.type).toBe("Apartment"); expect(item.property.bedrooms).toBe(2); expect(item.listing?.status).toBe("Ready"); }
   });
   it("reuses the homeowner score and saves the score at save time", () => {
     const item = sampleProperties[0]; if (!item) throw new Error("Missing source");
