@@ -70,6 +70,10 @@ bun run build
 
 The historical catalog requires access to its hosted asset URL. Do not commit credentials, repository metadata, dependencies or generated build output as deliverables.
 
+### Vercel catalog portability limitation
+
+The current catalog URL uses Lovable's `/__l5e/assets-v1/` infrastructure, which is not served by a standalone Vercel deployment. A complete static copy at `/data/bayut-buyer-listings.json` was verified locally with all 41,381 records, including direct Buyer navigation and refresh, but could not be committed: the file is 17.9 MB and this project's Git commit check enforces a 10 MB per-file limit. The attempted loader change was rolled back so it does not reference an absent deployment file. The original hosted catalog remains intact. Production portability requires a supported way to deploy the full file or suitable public storage; Vercel verification remains pending.
+
 ## GitHub and publishing
 
 Changes committed in Lovable sync to the connected repository through Lovable’s Git integration. Manage the repository connection and check sync status in **Project settings → Git**. Repository sync saves source code; publishing the app is a separate action.
