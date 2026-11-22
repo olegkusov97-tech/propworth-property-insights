@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Gauge, Meter } from "./ui";
 import { propertyInsights } from "@/lib/property";
@@ -20,8 +19,7 @@ export function BuyerDetail({ kind, id }: { kind: ExploreKind; id: string }) {
   if (!item) return <><h1 className="font-display text-xl font-bold">Sample unavailable</h1><Link to={"/buyer/properties"} className="text-primary underline">Back to explore</Link></>;
   const r = itemInsights(item), score = itemScore(item, kind);
   return <>
-    <Button asChild variant="ghost" size="sm"><Link to={"/buyer/properties"}><ArrowLeft />{"All properties"}</Link></Button>
-    <div className="flex items-start justify-between gap-3"><div><h1 className="font-display text-2xl font-bold">{item.name}</h1><p className="mt-1 text-xs text-muted-foreground">{itemSegment(item)}</p></div><SaveItem item={item} kind={kind} /></div>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:justify-between"><div className="min-w-0"><h1 className="break-words font-display text-2xl font-bold">{item.name}</h1><p className="mt-1 text-xs text-muted-foreground">{itemSegment(item)}</p></div><div className="shrink-0"><SaveItem item={item} kind={kind} /></div></div>
     {<>
       <p className="text-xs text-muted-foreground">Historical Bayut sample · not currently available. Photos and unit size are not supplied.</p>
       {item.listing && <dl className="grid grid-cols-2 gap-3 border-y py-3 text-xs">{[["Asking price", item.listing.price > 0 ? `AED ${item.listing.price.toLocaleString("en-GB")}` : "Not supplied"], ["Building", listingBuilding(item.listing)], ["City", item.listing.city], ["Bathrooms", String(item.listing.bathrooms)], ["Furnishing", item.listing.furnishing], ["Posted", item.listing.date], ["Completion year (building)", item.listing.year > 0 ? String(item.listing.year) : "Not supplied"], ["Purpose", item.listing.purpose]].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="mt-1 break-words font-semibold">{value}</dd></div>)}</dl>}

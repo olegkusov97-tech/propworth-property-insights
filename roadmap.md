@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Homepage and consistent navigation
+- [x] Update compact branding, homepage headline and equal homeowner/homebuyer journeys.
+- [x] Move Back below branding in both journeys and compact the homeowner title area.
+- [x] Verify mobile homepage, dashboard, property search, detail, saved and comparison navigation.
 ## Property Finder corporate redesign
 - [x] Apply the reference site's logo, typography, palette and control styling across all journeys.
 - [x] Restyle the homepage and shared page headers while retaining current content and functionality.

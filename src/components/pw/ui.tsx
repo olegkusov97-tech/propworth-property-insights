@@ -4,15 +4,14 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Brand } from "./brand";
 
-export function Screen({ title, back, children, tone }: { title: string; back?: "/" | "/buyer" | "/owner"; children: ReactNode; tone?: string }) {
+export function Screen({ title, back, children }: { title: string; back?: "/" | "/buyer" | "/owner"; children: ReactNode; tone?: string }) {
   return (
     <div className="min-h-screen bg-muted">
       <div className="mx-auto min-h-screen max-w-2xl bg-background pb-10">
-        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b bg-background px-4 py-3 sm:px-6">
+        <header className="sticky top-0 z-10 border-b bg-background px-4 py-3 sm:px-6">
           <Brand />
-          {back && <Button asChild variant="ghost" size="icon"><Link to={back} aria-label="Back"><ArrowLeft className="h-5 w-5" /></Link></Button>}
         </header>
-        <main className="space-y-4 px-4 pt-5 sm:px-6"><div className="space-y-1"><p className="text-[11px] font-semibold text-muted-foreground">{tone ?? "Property Liquidity"}</p><h1 className="font-display text-xl font-bold leading-snug">{title}</h1></div>{children}</main>
+        <main className="space-y-3 px-4 pt-2 sm:px-6">{back && <Button asChild variant="ghost" size="sm" className="-ml-2"><Link to={back}><ArrowLeft />Back</Link></Button>}<h1 className="font-display text-xl font-bold leading-snug">{title}</h1>{children}</main>
       </div>
     </div>
   );
