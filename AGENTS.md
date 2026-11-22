@@ -30,9 +30,12 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Property prototype
-- Keep homeowner characteristic-aware mock calculations in a browser-safe property model separate from shared community calculations, so buyer estimates remain unchanged.
+- Keep shared community calculations unchanged; buyer liquidity explorers adapt the browser-safe homeowner property model so both journeys show consistent indicators without altering legacy finance estimates.
 - Normalize extended owner details at the homeowner boundary to retain compatibility with properties created by the buyer journey and older local records.
 - Persist owner setup drafts and confirmed details in separate browser storage keys, so incomplete edits do not overwrite the active property.
 - Derive homeowner segment indicators and activity from one price-independent mock model; ignore legacy asking premiums so unvalidated pricing predictions cannot reappear.
 - Retain closed homeowner monthly snapshots in a separate browser ledger and update only the current month; historical seed records use a fixed sample profile so edits never rewrite past scores.
 - Share the accessible monthly line chart between homeowner activity and liquidity history so tap, hover and keyboard month selection stay consistent.
+- Keep buyer catalog, filtering and comparison rules in a browser-safe adapter; market segments use neutral home details while individual listings use their sample characteristics.
+- Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
+- Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.

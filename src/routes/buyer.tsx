@@ -1,2 +1,3 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-export const Route = createFileRoute("/buyer")({ component: () => <Outlet /> });
+import { createFileRoute } from "@tanstack/react-router";
+import { BuyerShell } from "@/components/pw/buyer-shell";
+export const Route = createFileRoute("/buyer")({ component: BuyerShell });

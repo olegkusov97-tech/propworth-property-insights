@@ -1,63 +1,28 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Screen, Card, Meter, Disclaimer } from "@/components/pw/ui";
-import { usePlan } from "@/lib/store";
-import { getCommunity, liquidityScore, demandIndex, competitionIndex, sale90Probability, affordability, liquidityLabel, aed } from "@/lib/market";
-
-type S = { ids: string; income: number; savings: number; debts: number };
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { buyerHead } from "@/components/pw/buyer-shell";
+import { ItemLink, SaveItem } from "@/components/pw/buyer-explorer";
+import { comparisonIds, findItem, itemScore, type ExploreItem, type ExploreKind } from "@/lib/buyer-liquidity";
+import { propertyInsights } from "@/lib/property";
+import { aed, getCommunity } from "@/lib/market";
 export const Route = createFileRoute("/buyer/compare")({
-  validateSearch: (s: Record<string, unknown>): S => ({ ids: String(s["ids"] ?? "jvc,marina"), income: Number(s["income"] ?? 35000), savings: Number(s["savings"] ?? 450000), debts: Number(s["debts"] ?? 0) }),
-  head: () => ({
-    meta: [
-      { title: "Compare by Liquidity — Property Liquidity by Property Finder" },
-      { name: "description", content: "Compare UAE communities on liquidity, demand and future resale ease — not just price." },
-      { property: "og:title", content: "Compare Properties by Liquidity — Property Liquidity by Property Finder" },
-      { property: "og:description", content: "See which homes may be easier to resell in the future." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: Compare,
+  validateSearch: (s: Record<string, unknown>) => ({ kind: String(s["kind"] ?? "markets"), ids: String(s["ids"] ?? "") }),
+  head: () => buyerHead("Compare Liquidity Side by Side", "Compare two or three sample properties or market segments using consistent liquidity indicators."), component: Compare,
 });
-
 function Compare() {
-  const s = Route.useSearch();
-  const [, setPlan] = usePlan();
-  const nav = useNavigate();
-  const list = s.ids.split(",").map(getCommunity);
-  const best = [...list].sort((a, b) => liquidityScore(b) - liquidityScore(a))[0]!;
-  const rows: [string, (c: ReturnType<typeof getCommunity>) => string | number, boolean?][] = [
-    ["Typical price (1,000 sq ft)", (c) => aed(c.avgPricePerSqft * 1000)],
-    ["Liquidity Score", liquidityScore, true],
-    ["Buyer demand", demandIndex, true],
-    ["Competition", competitionIndex, true],
-    ["Avg days to sell", (c) => c.avgDaysOnMarket],
-    ["Est. resale in 90d*", (c) => `${sale90Probability(c)}%`],
-    ["Rental yield", (c) => `${c.rentalYield}%`],
+  const search = Route.useSearch(), kind: ExploreKind = search.kind === "properties" ? "properties" : "markets";
+  const items = comparisonIds(kind, search.ids).flatMap(id => { const item = findItem(kind, id); return item ? [item] : []; });
+  const values: { label: string; value: (item: ExploreItem) => string | number }[] = [
+    { label: kind === "markets" ? "Market Liquidity" : "Property Liquidity", value: item => `${itemScore(item, kind)}/100` },
+    ...(kind === "properties" ? [{ label: "Similar Properties", value: (item: ExploreItem) => `${propertyInsights(item.property).market.liquidity}/100` }] : []),
+    { label: "Buyer Demand (higher is better)", value: item => `${propertyInsights(item.property).market.demand}/100` },
+    { label: "Supply Competition (lower is better)", value: item => `${propertyInsights(item.property).market.competition}/100` },
+    { label: "Active listings (month-end)", value: item => propertyInsights(item.property).market.listings },
+    { label: "Comparable sales (90 days)", value: item => propertyInsights(item.property).market.sales90d },
+    { label: "Monthly liquidity change", value: item => { const r = propertyInsights(item.property), prev = r.snapshots.at(-2), delta = itemScore(item, kind) - (kind === "markets" ? prev?.market ?? 0 : prev?.property ?? 0); return `${delta > 0 ? "+" : ""}${delta} pts`; } },
+    { label: kind === "markets" ? "Typical estimated home value" : "Sample listing price", value: item => aed(propertyInsights(item.property).value) },
+    { label: "Bedrooms / size", value: item => `${item.property.bedrooms}BR · ${item.property.sizeSqft.toLocaleString()} sq ft` },
+    { label: "Completion", value: item => item.property.status },
   ];
-  return (
-    <Screen title="Compare by liquidity" back="/buyer" tone="Buyer">
-      <Card className="bg-secondary">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Easiest to resell</p>
-        <p className="font-display text-xl font-bold">{best.name}</p>
-        <p className="text-sm text-muted-foreground">{liquidityLabel(liquidityScore(best))} liquidity — stronger demand relative to supply means more buyers when you sell.</p>
-      </Card>
-      {rows.map(([label, fn, bar]) => (
-        <Card key={label} className="space-y-2 p-3">
-          <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-          {list.map((c) => (
-            <div key={c.id} className="flex items-center gap-2 text-sm">
-              <span className="w-28 truncate">{c.name}</span>
-              {bar ? <Meter value={Number(fn(c))} className={label === "Competition" ? "bg-accent" : "bg-primary"} /> : <span className="flex-1" />}
-              <b className="w-16 text-right">{fn(c)}</b>
-            </div>
-          ))}
-        </Card>
-      ))}
-      <Disclaimer>*Indicative probability a typical home would sell within 90 days at market price. Unvalidated estimate from simulated data.</Disclaimer>
-      <button className="w-full rounded-xl bg-primary p-3 font-semibold text-primary-foreground" onClick={() => {
-        setPlan({ income: s.income, savings: s.savings, debts: s.debts, budget: affordability(s.income, s.savings, s.debts).budget, shortlist: list.map((c) => c.id), createdAt: new Date().toISOString() });
-        nav({ to: "/buyer/plan" });
-      }}>Save as my purchase plan</button>
-    </Screen>
-  );
+  return <><h1 className="font-display text-2xl font-bold">Compare {kind === "markets" ? "market segments" : "properties"}</h1><Button asChild variant="outline" size="sm"><Link to={kind === "markets" ? "/buyer/markets" : "/buyer/properties"}>Change selection</Link></Button>{items.length < 2 ? <div className="border-y py-6"><p>Select 2–3 {kind === "markets" ? "market segments" : "properties"} to compare.</p></div> : <div className="overflow-x-auto rounded-lg border bg-card"><table className="w-full min-w-[560px] text-left text-xs"><thead><tr><th className="w-32 p-3">November 2026</th>{items.map(item => <th key={item.id} className="min-w-36 p-3"><ItemLink item={item} kind={kind} className="text-primary underline">{item.name}</ItemLink><p className="mt-1 font-normal text-muted-foreground">{getCommunity(item.property.communityId).name}</p><div className="mt-2"><SaveItem item={item} kind={kind} /></div></th>)}</tr></thead><tbody>{values.map(row => <tr key={row.label} className="border-t"><th className="p-3 font-normal text-muted-foreground">{row.label}</th>{items.map(item => <td key={item.id} className="p-3 font-semibold">{row.value(item)}</td>)}</tr>)}</tbody></table></div>}<p className="text-[10px] text-muted-foreground">Simulated comparisons · demand and competition describe comparable homes, not confirmed buyers for an individual property.</p></>;
 }

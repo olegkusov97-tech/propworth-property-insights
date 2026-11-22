@@ -1,4 +1,10 @@
 # Homeowner improvements
+## Buyer liquidity exploration
+- [x] Add independent market and property entry points with filters, details and comparisons.
+- [x] Reuse homeowner indicators and charts; remove unsupported buyer sale predictions.
+- [x] Save and track sample properties and segments on this device; transfer purchased properties safely to homeowner setup.
+- [x] Verify filtering, comparison, saved tracking and purchase handoff on mobile; leave homepage and homeowner dashboard unchanged.
+
 ## Liquidity-first dashboard redesign
 - [x] Simplify liquidity, valuation and demand cards; remove pricing predictions and duplicated market sections.
 - [x] Add selectable market trends and two-line liquidity history with retained monthly snapshots.
