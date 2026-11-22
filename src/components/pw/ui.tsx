@@ -1,26 +1,25 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { Brand } from "./brand";
 
 export function Screen({ title, back, children, tone }: { title: string; back?: "/" | "/buyer" | "/owner"; children: ReactNode; tone?: string }) {
   return (
-    <div className="min-h-screen bg-muted/60">
-      <div className="mx-auto min-h-screen max-w-md bg-background pb-10 shadow-card">
-        <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/90 px-4 py-3 backdrop-blur">
-          {back && <Link to={back} aria-label="Back" className="rounded-full p-1.5 hover:bg-muted"><ArrowLeft className="h-5 w-5" /></Link>}
-          <div className="flex-1">
-            <p className="text-[11px] font-semibold text-muted-foreground">Property Liquidity by Property Finder{tone ? ` · ${tone}` : ""}</p>
-            <h1 className="font-display text-lg font-bold leading-tight">{title}</h1>
-          </div>
+    <div className="min-h-screen bg-muted">
+      <div className="mx-auto min-h-screen max-w-2xl bg-background pb-10">
+        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b bg-background px-4 py-3 sm:px-6">
+          <Brand />
+          {back && <Button asChild variant="ghost" size="icon"><Link to={back} aria-label="Back"><ArrowLeft className="h-5 w-5" /></Link></Button>}
         </header>
-        <main className="space-y-4 px-4 pt-4">{children}</main>
+        <main className="space-y-4 px-4 pt-5 sm:px-6"><div className="space-y-1"><p className="text-[11px] font-semibold text-muted-foreground">{tone ?? "Property Liquidity"}</p><h1 className="font-display text-xl font-bold leading-snug">{title}</h1></div>{children}</main>
       </div>
     </div>
   );
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`rounded-2xl border bg-card p-4 shadow-card ${className}`}>{children}</section>;
+  return <section className={`rounded-lg border bg-card p-4 shadow-card ${className}`}>{children}</section>;
 }
 
 export function Gauge({ value, label, labelClassName = "uppercase" }: { value: number; label: string; labelClassName?: string }) {

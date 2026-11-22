@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Property Finder corporate redesign
+- [x] Apply the reference site's logo, typography, palette and control styling across all journeys.
+- [x] Restyle the homepage and shared page headers while retaining current content and functionality.
+- [x] Verify homeowner, buyer, buying and selling screens on mobile and desktop.
 ## Properties-only Buyer and safe property switching
 - [x] Remove Markets screens, navigation, saved segments and comparisons; open Buyer directly in Properties.
 - [x] Change the owner action to property selection while preserving previous property data and snapshots.

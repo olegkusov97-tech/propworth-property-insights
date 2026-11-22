@@ -30,6 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Property prototype
+- Keep the app-wide visual identity in shared CSS tokens and the shared Brand component; page-specific colors must use semantic tokens so all journeys remain consistent.
 - Keep shared community calculations unchanged; buyer liquidity explorers adapt the browser-safe homeowner property model so both journeys show consistent indicators without altering legacy finance estimates.
 - Normalize extended owner details at the homeowner boundary to retain compatibility with properties created by the buyer journey and older local records.
 - Persist owner setup drafts and confirmed details in separate browser storage keys, so incomplete edits do not overwrite the active property.
