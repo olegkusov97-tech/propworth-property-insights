@@ -68,24 +68,71 @@ function typeFactor(p: PropertyDetails, c: Community) {
 export function saleability(score: number) {
   return score >= 70 ? "High" : score >= 50 ? "Moderate" : "Low";
 }
-function marketSnapshot(c: Community, previous = false) {
+export interface MarketActivity {
+  searches: number; saves: number; enquiries: number; listings: number; sales90d: number; days: number;
+}
+export function scoreMarket(activity: MarketActivity) {
+  const weighted = activity.searches * .2 + activity.saves + activity.enquiries * 3;
+  const demand = Math.round(weighted / (weighted + activity.listings * 10) * 100);
+  const competition = Math.round(clamp(activity.listings / (activity.sales90d / 3) * 10));
+  const liquidity = Math.round(demand * .45 + (100 - competition) * .3 + clamp(100 - activity.days) * .25);
+  return { ...activity, demand, competition, liquidity };
+}
+function marketSnapshot(c: Community, monthsAgo = 0) {
   const shifts: Record<string, [number, number, number]> = {
     marina: [.064, -.035, .047], jvc: [.042, .061, .032], dhills: [.081, -.047, .065],
     springs: [.035, -.026, .041], dsc: [-.022, .072, -.031],
   };
   const [d, s, t] = shifts[c.id] ?? [.03, .02, .025];
-  const searches = Math.round(c.searches / (previous ? 1 + d : 1));
-  const saves = Math.round(c.saves / (previous ? 1 + d * 1.2 : 1));
-  const enquiries = Math.round(c.enquiries / (previous ? 1 + d * .85 : 1));
-  const listings = Math.round(c.activeListings / (previous ? 1 + s : 1));
-  const sales90d = Math.round(c.transactions90d / (previous ? 1 + t : 1));
-  const days = c.avgDaysOnMarket + (previous ? Math.round(d * 45) : 0);
-  const weighted = searches * .2 + saves + enquiries * 3;
-  const demand = Math.round(weighted / (weighted + listings * 10) * 100);
-  const competition = Math.round(clamp(listings / (sales90d / 3) * 10));
-  const liquidity = Math.round(demand * .45 + (100 - competition) * .3 + clamp(100 - days) * .25);
-  return { searches, saves, enquiries, listings, sales90d, days, demand, competition, liquidity };
+  return scoreMarket({
+    searches: Math.round(c.searches / Math.pow(1 + d, monthsAgo)),
+    saves: Math.round(c.saves / Math.pow(1 + d * 1.2, monthsAgo)),
+    enquiries: Math.round(c.enquiries / Math.pow(1 + d * .85, monthsAgo)),
+    listings: Math.round(c.activeListings / Math.pow(1 + s, monthsAgo)),
+    sales90d: Math.round(c.transactions90d / Math.pow(1 + t, monthsAgo)),
+    days: Math.max(14, c.avgDaysOnMarket + Math.round(d * 45 * monthsAgo)),
+  });
 }
+function segmentSnapshot(p: PropertyDetails, c: Community, monthsAgo = 0) {
+  const m = marketSnapshot(c, monthsAgo);
+  // A fixed segment mix, independent of building, optional characteristics and asking price.
+  const share = clamp(.07 / (1 + Math.abs(p.bedrooms - 2) * .4)
+    * (p.propertyType === c.type ? 1 : .45) * (p.status === "Off-plan" ? .6 : 1)
+    / (1 + Math.max(0, p.sizeSqft - 1500) / 8000), .008, .09);
+  const fit = (p.propertyType === c.type ? 1 : .88)
+    * (p.status === "Off-plan" ? .78 : 1) / (1 + Math.abs(p.bedrooms - 2) * .065)
+    / (1 + Math.max(0, p.sizeSqft - 1500) / 12000);
+  return scoreMarket({
+    searches: Math.max(1, Math.round(m.searches * share * fit)),
+    saves: Math.max(1, Math.round(m.saves * share * fit)),
+    enquiries: Math.max(1, Math.round(m.enquiries * share * fit)),
+    listings: Math.max(8, Math.round(m.listings * share)),
+    sales90d: Math.max(6, Math.round(m.sales90d * share * fit)),
+    days: Math.round(m.days / fit),
+  });
+}
+export function monthlyMeaning(now: ReturnType<typeof scoreMarket>, prev: ReturnType<typeof scoreMarket>) {
+  const demandGrowth = (now.searches / prev.searches - 1) * 100;
+  const supplyGrowth = (now.listings / prev.listings - 1) * 100;
+  const delta = now.liquidity - prev.liquidity;
+  const activity = `Buyer searches ${demandGrowth >= 0 ? "rose" : "fell"} ${Math.abs(demandGrowth).toFixed(1)}%, while competing supply ${supplyGrowth >= 0 ? "grew" : "fell"} ${Math.abs(supplyGrowth).toFixed(1)}%.`;
+  const balance = demandGrowth >= 0 && supplyGrowth > demandGrowth
+    ? "More buyers are looking, but listings grew faster, giving them more choice."
+    : demandGrowth >= 0 && supplyGrowth <= 0
+      ? "More buyers are competing for fewer listings, improving your selling position."
+      : demandGrowth > supplyGrowth
+        ? "Buyer interest is holding up better than supply, easing competitive pressure."
+        : "Supply is outpacing buyer interest, increasing pressure on sellers.";
+  const outcome = Math.abs(delta) <= 1
+    ? "Overall market liquidity stayed broadly stable: buyer interest, competition and selling speed largely offset one another."
+    : delta > 0 ? `Market liquidity improved by ${delta} points as the combined balance of demand, competition and selling speed strengthened.`
+      : `Market liquidity fell by ${Math.abs(delta)} points as the combined balance of demand, competition and selling speed weakened.`;
+  const advice = Math.abs(delta) <= 1 ? "For you: no clear change in selling conditions; keep your asking price close to comparable sales."
+    : delta > 0 ? "For you: similar homes face better selling conditions, but an above-market asking price can still slow a sale."
+      : "For you: expect more price-sensitive buyers; competitive pricing and a well-presented home matter more.";
+  return { activity, balance, outcome, advice, delta };
+}
+export const liquidityMonths = ["Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May 2026", "Jun 2026", "Jul 2026", "Aug 2026", "Sep 2026", "Oct 2026", "Nov 2026"];
 
 export function propertyInsights(input: OwnedProperty) {
   const p = normalizeProperty(input), c = getCommunity(p.communityId);
@@ -95,39 +142,61 @@ export function propertyInsights(input: OwnedProperty) {
   const bedroomFactor = 1 + (p.bedrooms - 2) * .012;
   const pricePerSqft = Math.round(c.avgPricePerSqft * (building?.priceFactor ?? type) * (1 + q) * sizeFactor * bedroomFactor * (p.status === "Off-plan" ? .92 : 1));
   const value = Math.round(pricePerSqft * p.sizeSqft / 1000) * 1000;
-  const market = marketSnapshot(c), previousMarket = marketSnapshot(c, true);
-  const appeal = q * 100 + (building ? (building.priceFactor - type) * 18 : 0)
-    - p.sizeSqft / (p.propertyType === "Apartment" ? 700 : 1800) - Math.abs(p.bedrooms - 2) * 1.5
-    + (p.propertyType === "Villa" ? 4 : p.propertyType === "Townhouse" ? 2 : 0)
-    - (p.propertyType !== c.type ? 5 : 0) - (p.status === "Off-plan" ? 12 : 0);
-  const atPrice = (m: typeof market) => {
-    const demand = Math.round(clamp(m.demand + appeal - p.askingPremium * 1.8));
-    const competition = Math.round(clamp(m.competition - appeal * .3 + p.askingPremium * 1.2));
-    const days = Math.max(14, Math.round(m.days - appeal * .6 + p.askingPremium * 2));
+  const communityMarket = marketSnapshot(c), previousCommunityMarket = marketSnapshot(c, 1);
+  const market = segmentSnapshot(p, c), previousMarket = segmentSnapshot(p, c, 1);
+  const characteristicFactors = [
+    { label: "Building", detail: building ? `${building.name}'s mock buyer appeal relative to the segment` : "No building-specific buyer adjustment available", appeal: building ? (building.priceFactor - type) * 18 : 0 },
+    { label: "View", detail: p.view, appeal: (p.view === "Sea / marina" ? .09 : p.view === "Garden" ? .035 : p.view === "Road" ? -.045 : 0) * 100 },
+    { label: "Condition", detail: p.condition, appeal: p.condition === "Renovated" ? 7 : p.condition === "Needs renovation" ? -10 : 0 },
+    { label: "Furnishing", detail: p.furnishing, appeal: p.furnishing === "Furnished" ? 2.5 : p.furnishing === "Part furnished" ? 1 : 0 },
+    { label: "Balcony", detail: p.balcony, appeal: p.balcony === "Yes" ? 2 : p.balcony === "No" ? -2 : 0 },
+    { label: "Parking", detail: p.parking === null ? "Not specified" : `${p.parking} spaces`, appeal: p.parking === null ? 0 : p.parking === 0 ? -3.5 : Math.min(p.parking, 3) * 1.2 },
+    { label: "Floor", detail: p.floor === null ? "Not specified" : `Floor ${p.floor}`, appeal: p.propertyType === "Apartment" && p.floor !== null ? Math.min(p.floor, 40) * .1 : 0 },
+  ];
+  const appeal = characteristicFactors.reduce((sum, factor) => sum + factor.appeal, 0);
+  const atPrice = (m: ReturnType<typeof scoreMarket>, adjustment = appeal, premium = p.askingPremium) => {
+    const demand = Math.round(clamp(m.demand + adjustment - premium * 1.8));
+    const competition = Math.round(clamp(m.competition - adjustment * .3 + premium * 1.2));
+    const days = Math.max(14, Math.round(m.days - adjustment * .6 + premium * 2));
     const liquidity = Math.round(clamp(demand * .45 + (100 - competition) * .3 + clamp(100 - days) * .25));
     return { demand, competition, days, liquidity };
   };
   const property = atPrice(market), previousProperty = atPrice(previousMarket);
-  // Synthetic cohort: every row obeys the exact disclosed matching criteria.
-  const comparables = [.82, .9, .96, 1.04, 1.12, 1.2].map((ratio, i) => ({
-    id: `comp-${i}`, communityId: c.id, propertyType: p.propertyType, bedrooms: p.bedrooms,
-    status: p.status, sizeSqft: Math.round(p.sizeSqft * ratio),
-    price: Math.round(p.sizeSqft * ratio * pricePerSqft * (1 + (i - 2.5) * .018) / 1000) * 1000,
-    period: ["Nov 2026", "Nov 2026", "Oct 2026", "Oct 2026", "Sep 2026", "Sep 2026"][i] ?? "Nov 2026",
-  }));
-  const share = clamp(.07 / (1 + Math.abs(p.bedrooms - 2) * .4) * (p.status === "Off-plan" ? .6 : 1), .015, .09);
-  const signals = {
-    searches: Math.round(market.searches * share * (1 + appeal / 100)),
-    saves: Math.round(market.saves * share * (1 + appeal / 100)),
-    enquiries: Math.round(market.enquiries * share * (1 + appeal / 100)),
-    listings: Math.max(8, Math.round(market.listings * share)),
-    sales90d: Math.max(6, Math.round(market.sales90d * share)),
+  const unpricedProperty = atPrice(market, appeal, 0);
+  const scoreReasons = {
+    characteristics: unpricedProperty.liquidity - market.liquidity,
+    pricing: property.liquidity - unpricedProperty.liquidity,
+    total: property.liquidity - market.liquidity,
   };
-  const liquidityHistory = Array.from({ length: 12 }, (_, i) => Math.round(clamp(previousProperty.liquidity - (10 - i) * .6 + Math.sin(i * .9) * 1.8)));
-  liquidityHistory[10] = previousProperty.liquidity;
-  liquidityHistory[11] = property.liquidity;
+  // Comparable records use segment-level pricing, never the subject's quality or asking price.
+  const segmentPricePerSqft = c.avgPricePerSqft * type * sizeFactor * bedroomFactor * (p.status === "Off-plan" ? .92 : 1);
+  const matchingBuildings = buildings.filter(b => b.communityId === p.communityId && b.type === p.propertyType && b.status === p.status);
+  const fallbacks = p.propertyType === "Apartment" ? ["Orchid Residences", "Park View Tower", "The Residence"]
+    : p.propertyType === "Villa" ? ["Garden Villas", "Parkside Villas", "The Meadows Residences"]
+      : ["Parkside Townhouses", "Garden Townhomes", "The Courtyard"];
+  const comparables = [.82, .9, .96, 1.04, 1.12, 1.2].map((ratio, i) => {
+    const match = matchingBuildings[i % Math.max(1, matchingBuildings.length)];
+    const buildingName = match?.name ?? `${c.name} · ${fallbacks[i % 3] ?? "Residences"}`;
+    const sizeSqft = Math.round(p.sizeSqft * ratio);
+    const rate = segmentPricePerSqft * (match ? match.priceFactor / type : 1) * (1 + (i - 2.5) * .018);
+    const price = Math.round(sizeSqft * rate / 1000) * 1000;
+    return {
+      id: `comp-${i}`, communityId: c.id, building: buildingName, propertyType: p.propertyType,
+      bedrooms: p.bedrooms, status: p.status, sizeSqft, price,
+      pricePerSqft: Math.round(price / sizeSqft),
+      transactionDate: ["2026-11-17", "2026-11-08", "2026-10-26", "2026-10-12", "2026-09-28", "2026-09-09"][i] ?? "2026-11-17",
+    };
+  });
+  const signals = { searches: market.searches, saves: market.saves, enquiries: market.enquiries, listings: market.listings, sales90d: market.sales90d };
+  const history = liquidityMonths.map((month, i) => {
+    const snapshot = segmentSnapshot(p, c, 11 - i);
+    return { month, market: snapshot.liquidity, property: atPrice(snapshot).liquidity };
+  });
+  const liquidityHistory = history.map(row => row.property);
   const valueHistory = Array.from({ length: 12 }, (_, i) => value * (1 - (11 - i) * .006));
   return { p, c, value, pricePerSqft, market, previousMarket, property, previousProperty,
-    comparables, signals, liquidityHistory, valueHistory, matchedBuilding: Boolean(building),
+    comparables, signals, liquidityHistory, history, valueHistory, matchedBuilding: Boolean(building),
+    communityMarket, previousCommunityMarket, characteristicFactors, scoreReasons,
+    monthlyUpdate: monthlyMeaning(market, previousMarket),
     askingPrice: Math.round(value * (1 + p.askingPremium / 100)), saleability: saleability(property.liquidity) };
 }

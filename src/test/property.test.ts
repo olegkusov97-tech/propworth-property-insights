@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptyProperty, fromBuilding, buildings, normalizeProperty, propertyErrors, propertyInsights, saleability } from "@/lib/property";
+import { emptyProperty, fromBuilding, buildings, normalizeProperty, propertyErrors, propertyInsights, saleability, scoreMarket, monthlyMeaning } from "@/lib/property";
 
 const base = { ...emptyProperty, communityId: "marina", building: "Marina Gate" };
 describe("Homeowner property intelligence", () => {
@@ -51,10 +51,10 @@ describe("Homeowner property intelligence", () => {
   });
   it("reports actual monthly demand, supply and liquidity differences", () => {
     const r = propertyInsights(base);
-    expect(r.market.searches).toBe(61000);
-    expect(r.previousMarket.searches).toBe(Math.round(61000 / 1.064));
-    expect(r.market.listings).toBe(2600);
-    expect(r.previousMarket.listings).toBe(Math.round(2600 / .965));
+    expect(r.market.searches).toBe(4270);
+    expect(r.previousMarket.searches).toBe(Math.round(Math.round(61000 / 1.064) * .07));
+    expect(r.market.listings).toBe(182);
+    expect(r.previousMarket.listings).toBe(Math.round(Math.round(2600 / .965) * .07));
     expect(r.property.liquidity).not.toBe(r.previousProperty.liquidity);
     expect(r.liquidityHistory[10]).toBe(r.previousProperty.liquidity);
     expect(r.liquidityHistory[11]).toBe(r.property.liquidity);
@@ -84,5 +84,55 @@ describe("Homeowner property intelligence", () => {
       expect(v).toBeGreaterThanOrEqual(0);
       expect(v).toBeLessThanOrEqual(100);
     }
+  });
+  it("matches JVC ready 2-bedroom apartments instead of the whole community", () => {
+    const r = propertyInsights({ ...base, communityId: "jvc", building: "Belgravia" });
+    expect(r.market.searches).toBe(Math.round(48200 * .07));
+    expect(r.market.listings).toBe(Math.round(3100 * .07));
+    expect(r.communityMarket.searches).toBe(48200);
+    expect(r.market).not.toEqual(r.communityMarket);
+    expect(r.market).toEqual(scoreMarket({ ...r.signals, days: r.market.days }));
+  });
+  it.each([ ["bedrooms", 3], ["propertyType", "Villa"], ["status", "Off-plan"], ["sizeSqft", 4000] ] as const)("updates matching market activity and comparisons for %s", (key, value) => {
+    const a = propertyInsights(base), b = propertyInsights({ ...base, [key]: value });
+    expect(b.market).not.toEqual(a.market);
+    expect(b.comparables).not.toEqual(a.comparables);
+    expect(b.value).not.toBe(a.value);
+    expect(b.property.liquidity).not.toBe(a.property.liquidity);
+  });
+  it("keeps recorded sales and all market snapshots independent of asking price and condition", () => {
+    const a = propertyInsights(base), b = propertyInsights({ ...base, askingPremium: 15, condition: "Needs renovation" });
+    expect(b.market).toEqual(a.market); expect(b.previousMarket).toEqual(a.previousMarket);
+    expect(b.communityMarket).toEqual(a.communityMarket); expect(b.signals).toEqual(a.signals);
+    expect(b.comparables).toEqual(a.comparables);
+    expect(b.history.map(h => h.market)).toEqual(a.history.map(h => h.market));
+    expect(b.history.map(h => h.property)).not.toEqual(a.history.map(h => h.property));
+  });
+  it("reconciles characteristics and pricing contributions to the exact property-market gap", () => {
+    const r = propertyInsights({ ...base, condition: "Renovated", askingPremium: 5 });
+    expect(r.scoreReasons.characteristics).toBeGreaterThan(0);
+    expect(r.scoreReasons.pricing).toBeLessThan(0);
+    expect(r.scoreReasons.characteristics + r.scoreReasons.pricing).toBe(r.property.liquidity - r.market.liquidity);
+  });
+  it("uses named buildings, concrete transaction dates and consistent price per sqft", () => {
+    const r = propertyInsights(base);
+    for (const c of r.comparables) {
+      expect(["Marina Gate", "Princess Tower", "Silverene Tower"]).toContain(c.building);
+      expect(c.transactionDate).toMatch(/^2026-(09|10|11)-\d{2}$/);
+      expect(c.pricePerSqft).toBe(Math.round(c.price / c.sizeSqft));
+    }
+  });
+  it("scores each history month consistently and ends at the current indicators", () => {
+    const r = propertyInsights(base);
+    expect(r.history).toHaveLength(12);
+    expect(r.history[0]?.month).toBe("Dec 2025");
+    expect(r.history[11]).toEqual({ month: "Nov 2026", market: r.market.liquidity, property: r.property.liquidity });
+    expect(r.history[10]).toEqual({ month: "Oct 2026", market: r.previousMarket.liquidity, property: r.previousProperty.liquidity });
+  });
+  it("balances 4% more searches against 6% more supply without falsely claiming a liquidity improvement", () => {
+    const prev = scoreMarket({ searches: 10000, saves: 1000, enquiries: 500, listings: 500, sales90d: 300, days: 50 });
+    const now = scoreMarket({ searches: 10400, saves: 1040, enquiries: 520, listings: 530, sales90d: 318, days: 50 });
+    expect(now.liquidity - prev.liquidity).toBe(0);
+    expect(monthlyMeaning(now, prev).delta).toBe(0);
   });
 });

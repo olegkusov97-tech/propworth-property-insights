@@ -3,8 +3,9 @@ import { Bell, BellOff, Building2, Heart, MessageSquare, Pencil, Search } from "
 import { Button } from "@/components/ui/button";
 import { Card, Gauge, Spark, Meter, Disclaimer, Trend } from "./ui";
 import { propertyInsights, type PropertyDetails } from "@/lib/property";
-import { aed, months } from "@/lib/market";
+import { aed } from "@/lib/market";
 import { useStored, type OwnedProperty } from "@/lib/store";
+import { LiquidityHistory } from "./liquidity-history";
 
 export function PropertyDashboard({ owned, onChange, onEdit, onReplace }: {
   owned: OwnedProperty; onChange: (p: PropertyDetails) => void; onEdit: () => void; onReplace: () => void;
@@ -26,8 +27,23 @@ export function PropertyDashboard({ owned, onChange, onEdit, onReplace }: {
     <Card className="space-y-3">
       <div className="flex items-center gap-4"><Gauge value={property.liquidity} label="Property" /><div className="min-w-0 flex-1"><h2 className="font-display text-xl font-bold">Property Liquidity</h2><p className={`font-semibold ${color}`} data-testid="saleability">{r.saleability} Saleability</p><p className="mt-1 text-xs text-muted-foreground">{p.status === "Off-plan" ? "Indicative resale / assignment time" : "Indicative time on market"}: ~{property.days} days</p></div></div>
       <PointChange now={property.liquidity} prev={previousProperty.liquidity} />
-      <p className="text-xs text-muted-foreground">Your home's buyer appeal and pricing, relative to similar properties.</p>
+      <p className="text-xs text-muted-foreground">Your home's selling position within its matching market segment, including its characteristics and asking price.</p>
       <Disclaimer>Unvalidated mock estimate, not a valuation or guarantee of sale. {p.status === "Off-plan" ? "Resale depends on developer permissions and payment milestones, which are not checked here." : "Saleability describes relative ease of selling, not a probability."}</Disclaimer>
+    </Card>
+
+    <Card className="space-y-3">
+      <h2 className="text-sm font-semibold">Why your property scores {r.scoreReasons.total > 0 ? "higher" : r.scoreReasons.total < 0 ? "lower" : "in line with its market"}</h2>
+      <p className="text-sm" data-testid="score-comparison">Your property <b>{property.liquidity}/100</b> · Similar homes <b>{market.liquidity}/100</b></p>
+      <p className="text-xs text-muted-foreground">Market Liquidity is the baseline for similar homes. Property Liquidity starts from that baseline and adjusts for your home's buyer appeal and asking price.</p>
+      <div className="space-y-2 text-xs">
+        <div className="flex justify-between gap-3"><span>Characteristics and buyer appeal</span><b>{signed(r.scoreReasons.characteristics)} pts</b></div>
+        <div className="flex justify-between gap-3"><span>Asking price adjustment ({signed(p.askingPremium)}%)</span><b>{signed(r.scoreReasons.pricing)} pts</b></div>
+        <div className="flex justify-between gap-3 border-t pt-2"><span>Total vs market segment</span><b>{signed(r.scoreReasons.total)} pts</b></div>
+      </div>
+      <p className="text-xs text-muted-foreground">{p.askingPremium > 0 ? "Your price premium narrows the buyer pool and adds competitive pressure." : p.askingPremium < 0 ? "Pricing below estimated value attracts a wider buyer pool and eases competitive pressure." : "At estimated value, pricing adds no premium or discount adjustment."} Your Buyer Demand is {property.demand}/100 vs {market.demand}/100 for the segment.</p>
+      <ul className="space-y-1 text-xs text-muted-foreground">{r.characteristicFactors.filter(f => f.appeal !== 0).map(f => <li key={f.label}><span className="font-semibold text-foreground">{f.label}: {f.detail}.</span> {f.appeal > 0 ? "Supports buyer appeal." : "Reduces buyer appeal."}</li>)}</ul>
+      {!r.characteristicFactors.some(f => f.appeal !== 0) && <p className="text-xs text-muted-foreground">No additional characteristic adjustment. Unspecified details are treated as neutral.</p>}
+      <p className="text-[11px] text-muted-foreground">Size, bedrooms, property type and ready/off-plan status define the comparison segment. Characteristics affect demand, competitive pressure and indicative selling time; the point changes above reconcile to your final score.</p>
     </Card>
 
     <Card className="space-y-3">
@@ -46,19 +62,22 @@ export function PropertyDashboard({ owned, onChange, onEdit, onReplace }: {
     </div>
 
     <section className="space-y-3 border-y py-4">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="font-display text-lg font-bold">Market Liquidity</h2><p className="text-xs text-muted-foreground">{c.name} · all property types</p></div><p className="font-display text-3xl font-bold" data-testid="market-liquidity">{market.liquidity}<span className="text-xs text-muted-foreground">/100</span></p></div>
+      <div className="flex items-center justify-between gap-3"><div className="min-w-0"><h2 className="font-display text-lg font-bold">Market Liquidity</h2><p className="text-xs text-muted-foreground" data-testid="market-segment">{segmentLabel(p, c.name)}</p></div><p className="shrink-0 font-display text-3xl font-bold" data-testid="market-liquidity">{market.liquidity}<span className="text-xs text-muted-foreground">/100</span></p></div>
+      <p className="text-[11px] text-muted-foreground">Size match: {Math.round(p.sizeSqft * .75).toLocaleString()}–{Math.round(p.sizeSqft * 1.25).toLocaleString()} sq ft (±25%)</p>
       <PointChange now={market.liquidity} prev={previousMarket.liquidity} />
-      <p className="text-xs text-muted-foreground">Community-wide market conditions, independent of your home's details and asking price.</p>
-      <div className="grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Demand index</p><b>{market.demand}/100</b></div><div><p className="text-xs text-muted-foreground">Competition index</p><b>{market.competition}/100</b></div></div>
+      <p className="text-xs text-muted-foreground">Selling conditions for comparable properties, before adjusting for your individual home's appeal or asking price.</p>
+      <div className="grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Market demand</p><b data-testid="market-demand">{market.demand}/100</b></div><div><p className="text-xs text-muted-foreground">Market competition</p><b data-testid="market-competition">{market.competition}/100</b></div></div>
+      <details className="border-t pt-3"><summary className="cursor-pointer text-xs text-muted-foreground">Community context · {c.name}: {r.communityMarket.liquidity}/100</summary><div className="mt-2 space-y-2 text-xs text-muted-foreground"><p>All community property types, bedrooms and completion stages. This broader context is not your property's comparison baseline.</p><PointChange now={r.communityMarket.liquidity} prev={r.previousCommunityMarket.liquidity} /><p>Demand {r.communityMarket.demand}/100 · Competition {r.communityMarket.competition}/100</p></div></details>
     </section>
 
     <Card className="space-y-3">
-      <h2 className="text-sm font-semibold">Monthly market changes</h2>
-      <p className="text-xs text-muted-foreground">Nov vs Oct 2026 · {c.name} · simulated snapshots</p>
+      <h2 className="text-sm font-semibold">What changed this month?</h2>
+      <p className="text-xs text-muted-foreground">Nov vs Oct 2026 · comparable property segment · simulated</p>
       <MonthlyRow label="Buyer searches" now={market.searches} prev={previousMarket.searches} />
-      <MonthlyRow label="Active supply" now={market.listings} prev={previousMarket.listings} invert />
+      <MonthlyRow label="Competing listings" now={market.listings} prev={previousMarket.listings} invert />
       <div className="flex items-center justify-between gap-2 text-sm"><span>Market Liquidity</span><span><b>{market.liquidity}</b> <PointChange now={market.liquidity} prev={previousMarket.liquidity} compact /></span></div>
-      <p className="text-[11px] text-muted-foreground">Monthly property changes hold your current details and asking premium constant, isolating the change in the market.</p>
+      <div className="space-y-2 border-t pt-3 text-xs text-muted-foreground" data-testid="monthly-meaning"><p>{r.monthlyUpdate.activity} {r.monthlyUpdate.balance}</p><p>{r.monthlyUpdate.outcome}</p><p className="font-semibold text-foreground">{r.monthlyUpdate.advice}</p></div>
+      <p className="text-[11px] text-muted-foreground">These updates compare the latest two mock months, not your actual visit dates. Property changes hold your current details and asking premium constant, so they reflect only changes in market conditions.</p>
     </Card>
 
     <Card className="space-y-3">
@@ -69,7 +88,7 @@ export function PropertyDashboard({ owned, onChange, onEdit, onReplace }: {
       <Signal icon={<MessageSquare />} label="Enquiries" value={r.signals.enquiries} />
       <Signal icon={<Building2 />} label="Active similar listings" value={r.signals.listings} />
       <Signal icon={<Building2 />} label={p.status === "Off-plan" ? "Resale / assignment records (90d)" : "Comparable sales (90d)"} value={r.signals.sales90d} />
-      <p className="text-[11px] text-muted-foreground">Synthetic cohort counts, scaled from community activity by bedroom mix, status and buyer appeal. Price simulation changes the indices, not recorded activity.</p>
+      <p className="text-[11px] text-muted-foreground">Mock segment activity matched by community, type, bedrooms, size and readiness. These same counts drive Market Liquidity; your characteristics and asking price affect only your property-specific indicators.</p>
     </Card>
 
     <details className="rounded-2xl border bg-card p-4 shadow-card">
@@ -77,28 +96,36 @@ export function PropertyDashboard({ owned, onChange, onEdit, onReplace }: {
       <div className="mt-3 space-y-3 text-xs text-muted-foreground">
         <p>{c.name} · {p.propertyType} · {p.bedrooms === 0 ? "Studio" : `${p.bedrooms} bedrooms`} · {p.status} · {Math.round(p.sizeSqft * .75).toLocaleString()}–{Math.round(p.sizeSqft * 1.25).toLocaleString()} sq ft (±25%). Same community, type, bedroom count and completion status.</p>
         <p>Community-wide matches, not just your building. {r.matchedBuilding ? "A known building price premium is applied." : "No building-specific benchmark is available; community pricing is used."} Floor, view, condition, furnishing, balcony and parking adjust your estimate. Unspecified details are neutral.</p>
-        <p>Six illustrative {p.status === "Off-plan" ? "resale / assignment" : "sale"} records from the last 90 days are shown below. These are generated mock comparisons, not actual transactions.</p>
-        <div className="divide-y">{r.comparables.map((comp, i) => <div key={comp.id} className="flex items-center justify-between gap-2 py-2"><span>Comparable {i + 1}<span className="block text-[11px]">{comp.sizeSqft.toLocaleString()} sq ft · {comp.period}</span></span><b className="text-foreground">{aed(comp.price)}</b></div>)}</div>
+        <h3 className="font-semibold text-foreground">{p.status === "Off-plan" ? "Comparable resale / assignments" : "Comparable Sales"}</h3>
+        <p>Six simulated transactions from the last 90 days. Building names are sample context; unit details and sales are fictional, not verified records. Subject-specific view, condition and asking-price changes never rewrite these transactions.</p>
+        <div className="divide-y">{r.comparables.map(comp => <article key={comp.id} className="space-y-1 py-3" data-testid="comparable-sale"><p className="font-semibold text-foreground">{comp.building}</p><p>{comp.bedrooms === 0 ? "Studio" : `${comp.bedrooms} bedrooms`} · {comp.propertyType} · {comp.sizeSqft.toLocaleString()} sq ft · {comp.status}</p><p>{p.status === "Off-plan" ? "Assignment date" : "Transaction date"}: {new Date(`${comp.transactionDate}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}</p><div className="flex flex-wrap justify-between gap-2"><b className="text-foreground">{p.status === "Off-plan" ? "Assignment price" : "Sale price"}: {aed(comp.price)}</b><span>AED {comp.pricePerSqft.toLocaleString()}/sq ft</span></div></article>)}</div>
       </div>
     </details>
 
     <details className="rounded-2xl border bg-card p-4 shadow-card">
       <summary className="cursor-pointer text-sm font-semibold">How are the indicators calculated?</summary>
       <dl className="mt-3 space-y-3 text-xs leading-relaxed text-muted-foreground">
-        <div><dt className="font-semibold text-foreground">Buyer Demand</dt><dd>Weighted interest W = searches × 0.2 + saves × 1 + enquiries × 3. Market demand = 100 × W ÷ (W + active listings × 10). Property demand adds a mock buyer-appeal adjustment for building, type, bedrooms, size, readiness and optional details, then subtracts 1.8 points per 1% asking premium.</dd></div>
-        <div><dt className="font-semibold text-foreground">Supply Competition</dt><dd>Market competition = active listings ÷ (90-day sales ÷ 3) × 10. Property competition adjusts this for buyer appeal (−0.3 × appeal) and asking price (+1.2 points per 1% premium). Higher scores mean more competing supply relative to sales.</dd></div>
-        <div><dt className="font-semibold text-foreground">Liquidity Score</dt><dd>45% Buyer Demand + 30% inverse Supply Competition + 25% selling speed (100 − indicative days on market). Property time adjusts the community average for buyer appeal and pricing. Each index is bounded to 0–100 and rounded.</dd></div>
-        <div><dt className="font-semibold text-foreground">Saleability</dt><dd>High: Property Liquidity ≥70. Moderate: 50–69. Low: below 50. These are unvalidated relative bands, not 90-day sale probabilities.</dd></div>
-        <div><dt className="font-semibold text-foreground">Estimated value</dt><dd>Community or building AED/sq ft × size, adjusted for type, bedrooms, size bracket, readiness and optional characteristics. Off-plan values are discounted 8% in this mock model. No asking-price premium is included. The ±7% range is illustrative, not a statistical confidence interval.</dd></div>
+        <div><dt className="font-semibold text-foreground">Buyer Demand</dt><dd>How much buyer interest similar homes attract relative to available listings. Searches show interest, saves show consideration, and enquiries show stronger intent.</dd></div>
+        <div><dt className="font-semibold text-foreground">Supply Competition</dt><dd>How many homes compete for buyers compared with the pace of recent sales. A higher score means buyers have more alternatives and sellers face more pressure.</dd></div>
+        <div><dt className="font-semibold text-foreground">Market vs Property Liquidity</dt><dd>Market Liquidity describes your matching segment using buyer interest, competing listings and selling speed. Property Liquidity adjusts that baseline for your home's buyer appeal and asking price. Higher scores mean easier selling conditions, not a guaranteed sale.</dd></div>
+        <div><dt className="font-semibold text-foreground">Saleability</dt><dd>High, Moderate or Low describes your property's relative selling position. It is not a probability of selling within a fixed period.</dd></div>
+        <div><dt className="font-semibold text-foreground">Estimated value</dt><dd>A mock community or building price per square foot, adjusted for your property's size, type, bedrooms, readiness and optional details. The asking price does not change this estimate.</dd></div>
+      </dl>
+    </details>
+    <details className="rounded-2xl border bg-card p-4 shadow-card">
+      <summary className="cursor-pointer text-sm font-semibold">Technical Methodology</summary>
+      <dl className="mt-3 space-y-3 text-xs leading-relaxed text-muted-foreground">
+        <div><dt className="font-semibold text-foreground">Simulated segment activity</dt><dd>Community counts are scaled to a matching segment by bedroom mix, property type, ready/off-plan status and size. Buyer activity and sales use a segment-fit factor; active supply uses the segment share. The same scaling is applied to each monthly snapshot. Building and optional characteristics do not change these market counts.</dd></div>
+        <div><dt className="font-semibold text-foreground">Demand and competition</dt><dd>Weighted interest W = searches × 0.2 + saves + enquiries × 3. Market demand = 100 × W ÷ (W + listings × 10). Competition = listings ÷ (90-day sales ÷ 3) × 10.</dd></div>
+        <div><dt className="font-semibold text-foreground">Property adjustments</dt><dd>Property demand = market demand + buyer appeal − asking premium × 1.8. Property competition = market competition − buyer appeal × 0.3 + premium × 1.2. Property days = market days − buyer appeal × 0.6 + premium × 2, with a 14-day floor. Premium is measured in percentage points.</dd></div>
+        <div><dt className="font-semibold text-foreground">Buyer appeal assumptions</dt><dd>Known building adjustment: (building price factor − type factor) × 18. Sea/marina view +9; garden +3.5; road −4.5. Renovated +7; needs renovation −10. Furnished +2.5; part furnished +1. Balcony yes +2; no −2. No parking −3.5; otherwise +1.2 per space up to 3. Apartment floor +0.1 per floor up to 40. Unspecified details are neutral. These are mock assumptions, not validated premiums.</dd></div>
+        <div><dt className="font-semibold text-foreground">Liquidity and saleability</dt><dd>Liquidity = 45% demand + 30% (100 − competition) + 25% selling speed, where speed = 100 − days, bounded to 0–100. Demand, competition and liquidity are bounded and rounded. High ≥70; Moderate 50–69; Low below 50. The characteristic contribution compares your home at estimated value to the segment. The pricing contribution compares your chosen price to that value-priced home; these contributions add exactly to the total score difference.</dd></div>
+        <div><dt className="font-semibold text-foreground">Valuation and transactions</dt><dd>Community or building rate × size, adjusted for type, bedrooms, size, readiness and optional quality details. Off-plan receives an illustrative 8% discount; the ±7% range is not a confidence interval. Comparable transactions use segment/building rates, not the subject's quality adjustments or asking premium. Each record's AED/sq ft equals its simulated price divided by its size, rounded.</dd></div>
+        <div><dt className="font-semibold text-foreground">History</dt><dd>Each month scores its own simulated searches, saves, enquiries, listings, 90-day sales and selling days using the same formulas. Property history applies your current characteristics and asking premium to every month; it does not record previous edits or actual visit dates.</dd></div>
       </dl>
     </details>
 
-    <Card>
-      <h2 className="mb-2 text-sm font-semibold">Property Liquidity history</h2>
-      <div className="flex h-24 items-end gap-1">{r.liquidityHistory.map((v, i) => <div key={i} className="flex-1 rounded-t bg-primary/80" style={{ height: `${v}%` }} title={`${months[i]}: ${v}`} />)}</div>
-      <div className="mt-1 flex justify-between text-[10px] text-muted-foreground"><span>Dec 2025</span><span>Nov 2026</span></div>
-      <p className="mt-2 text-[11px] text-muted-foreground">Simulated history at your current property details and asking premium.</p>
-    </Card>
+    <LiquidityHistory history={r.history} />
     <Card className="flex items-start gap-3 bg-secondary">
       <Bell className="mt-1 h-5 w-5 shrink-0 text-primary" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Monthly liquidity updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no notifications are sent." : "Save your preference for demand and liquidity alerts. Demo only."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div>
     </Card>
@@ -117,4 +144,8 @@ function MonthlyRow({ label, now, prev, invert = false }: { label: string; now: 
 }
 function Signal({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return <div className="flex items-center gap-3 text-sm"><span className="rounded-lg bg-muted p-2 text-primary [&_svg]:size-4">{icon}</span><span className="min-w-0 flex-1">{label}</span><b>{value.toLocaleString()}</b></div>;
+}
+function signed(value: number) { return `${value > 0 ? "+" : ""}${value}`; }
+function segmentLabel(p: PropertyDetails, community: string) {
+  return `${community} · ${p.bedrooms === 0 ? "Studio" : `${p.bedrooms}-bedroom`} ${p.propertyType.toLowerCase()}s · ${p.status.toLowerCase()}`;
 }
