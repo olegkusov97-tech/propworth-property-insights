@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import type { PropertyDetails } from "@/lib/property";
 import { listingReferencePeriod, listingSourceUrl, matchingListingReferences } from "@/lib/listing-reference";
 
-export function ListingReferences({ property }: { property: PropertyDetails }) {
+export function ListingReferences({ property, title = "Property Listings · uploaded reference" }: { property: PropertyDetails; title?: string }) {
   const [shown, setShown] = useState(6);
   const rows = matchingListingReferences(property);
   return <details className="rounded-2xl border bg-card p-4 shadow-card">
-    <summary className="cursor-pointer text-sm font-semibold">Property Listings · uploaded reference</summary>
+    <summary className="cursor-pointer text-sm font-semibold">{title}</summary>
     <div className="mt-3 space-y-3 text-xs text-muted-foreground">
       <p>Historical asking prices · {listingReferencePeriod}. Current availability is unknown.</p>
       <p>{rows.length.toLocaleString()} matching advertised records · same city, area, property type, bedrooms and ready/off-plan status.</p>

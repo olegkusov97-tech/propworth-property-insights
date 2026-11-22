@@ -12,7 +12,7 @@ import { MarketActivity } from "./market-activity";
 import { TransactionReferences } from "./transaction-references";
 import { ListingReferences } from "./listing-references";
 
-export function PropertyDashboard({ owned, onEdit, onReplace }: {
+export function PropertyDashboard({ owned, onEdit }: {
   owned: OwnedProperty; onChange: (p: PropertyDetails) => void; onEdit: () => void; onReplace: () => void;
 }) {
   const r = propertyInsights(owned);
@@ -46,14 +46,14 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
     <div className="flex items-center justify-between gap-3 border-b pb-3" aria-label="Valuation summary"><div><p className="text-[10px] text-muted-foreground">Valuation by PropWorth</p><p className="font-display text-xl font-bold" data-testid="header-property-value">{aed(r.value)}</p><p className="text-[10px] text-muted-foreground">Estimated value · simulated</p></div><Button asChild variant="link" size="sm" className="shrink-0 px-0"><a href="https://www.propertyfinder.ae/en/tools/home-value-estimator" target="_blank" rel="noopener noreferrer">View Valuation</a></Button></div>
     {p.genericBenchmark && <p className="text-xs text-muted-foreground">Original listing: {p.sourceAddress} · {p.sourceType}. Analytics use a generic simulated benchmark, not evidence for this local market.</p>}
     <div className="flex justify-end"><Button variant="outline" size="sm" onClick={onEdit}><Search /> Change Property</Button></div>
-    <Card className="space-y-3">
+    <div className="owner-score" data-liquidity={r.saleability}><Card className="space-y-3">
       <div className="flex items-center gap-3"><div className="shrink-0"><Gauge value={property.liquidity} label="Liquidity Score" labelClassName="max-w-16 text-center leading-tight" /></div><div className="min-w-0"><h2 className="font-display text-xl font-bold">Property Liquidity</h2><p className="font-semibold text-primary" data-testid="saleability">{r.saleability} Liquidity</p><Change delta={liquidityDelta} unit="pts" /><span className="block text-[10px] text-muted-foreground">vs last month</span></div></div>
       <p className="text-xs text-muted-foreground">How easily your property could sell compared with similar homes.</p>
       <div className="grid grid-cols-2 gap-3 border-y py-3 text-xs" data-testid="score-comparison"><div>Your Property <b className="block font-display text-xl text-primary" data-testid="property-liquidity">{property.liquidity}/100</b></div><div>Similar Properties <b className="block font-display text-xl" data-testid="market-liquidity">{market.liquidity}/100</b></div></div>
       <p className="text-xs">{interpretation}</p>
       <details><summary className="cursor-pointer text-xs font-semibold text-primary">How is this calculated?</summary><div className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground"><p>Buyer Demand reflects interest in similar homes. Supply Competition reflects how much choice buyers have relative to recent sales. Together with comparable market activity, these form the similar-properties benchmark.</p><p>Your Property Liquidity is an illustrative comparison that also considers your home's details. It is not confirmed demand for your home or a prediction of a sale.</p><p>Comparison segment: {segment}; sizes {Math.round(p.sizeSqft * .75).toLocaleString()}–{Math.round(p.sizeSqft * 1.25).toLocaleString()} sq ft. Activity is monthly; sales cover the preceding 90 days.</p><p>High: 70–100, Moderate: 50–69, Low: below 50. These bands and the value range are illustrative, not validated forecasts.</p></div></details>
       <p className="text-[10px] text-muted-foreground">Simulated estimates · not a valuation or guarantee of sale.</p>
-    </Card>
+    </Card></div>
     <div className="grid grid-cols-2 gap-3">
       <Card><h2 className="text-xs font-semibold">Buyer Demand</h2><p className="my-1 font-display text-2xl font-bold" data-testid="market-demand">{market.demand}<span className="text-sm text-muted-foreground">/100</span></p><Change delta={market.demand - prevDemand} unit="pts" /><Meter value={market.demand} /><p className="mt-2 text-[11px] text-muted-foreground">{market.demand > prevDemand ? "Demand is growing" : market.demand < prevDemand ? "Demand is softening" : "Demand is stable"}<br />Similar homes · higher is better</p></Card>
       <Card><h2 className="text-xs font-semibold">Supply Competition</h2><p className="my-1 font-display text-2xl font-bold" data-testid="market-competition">{market.competition}<span className="text-sm text-muted-foreground">/100</span></p><Change delta={market.competition - prevCompetition} unit="pts" invert /><Meter value={market.competition} className="bg-accent" /><p className="mt-2 text-[11px] text-muted-foreground">{market.competition < prevCompetition ? "Competition is easing" : market.competition > prevCompetition ? "Competition is growing" : "Competition is stable"}<br />Lower is better</p></Card>
@@ -63,13 +63,10 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
       <Metric label="Competing Listings" value={market.listings.toLocaleString()} delta={supplyDelta} unit="%" invert />
       <Metric label="Property Liquidity" value={`${property.liquidity}/100`} delta={liquidityDelta} unit="pts" />
     </div><p className="text-xs leading-relaxed" data-testid="monthly-meaning">{liquidityDelta > 1 ? "Selling conditions improved this month. " : liquidityDelta < -1 ? "Selling conditions softened this month. " : "Selling conditions stayed broadly stable. "}{insight}</p><p className="text-[10px] text-muted-foreground">Simulated data · changes compare monthly records.</p></section>
+    <Card className="flex items-start gap-3 bg-secondary"><Bell className="mt-1 size-5 shrink-0 text-primary" /><div><p className="text-sm font-semibold">Monthly Liquidity Updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no messages will be sent." : "Save your preference for monthly updates. Demo only — no messages will be sent."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" aria-pressed={alerts} onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div></Card>
     <MarketActivity snapshots={snapshots} segment={segment} />
-    <LiquidityHistory history={snapshots} />
-    <div id="valuation" className="scroll-mt-32"><Card className="space-y-1"><h2 className="text-xs font-semibold text-muted-foreground">Estimated Value</h2><p className="font-display text-xl font-bold" data-testid="property-value">{aed(r.value)}</p><p className="text-[11px] text-muted-foreground">Indicative range {aed(r.value * .93)}–{aed(r.value * 1.07)}</p><p className="text-xs text-muted-foreground">AED {r.pricePerSqft.toLocaleString()}/sq ft · simulated</p></Card></div>
-    {p.genericBenchmark ? <p className="text-xs text-muted-foreground">No area/type-matched transaction or listing references are shown for this generic benchmark.</p> : <><TransactionReferences property={p} /><ListingReferences property={p} /></>}
-    <Card className="flex items-start gap-3 bg-secondary"><Bell className="mt-1 size-5 shrink-0 text-primary" /><div><p className="text-sm font-semibold">Monthly liquidity updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no notifications sent." : "Keep up with demand and liquidity. Demo only."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div></Card>
-    <Button variant="link" className="w-full text-muted-foreground" onClick={onReplace}>Change property</Button>
-    <Link to="/buyer" className="block text-center text-xs text-primary underline">Thinking of buying another? Open buyer tools</Link>
+    <div className="owner-score" data-liquidity={r.saleability}><LiquidityHistory history={snapshots} /></div>
+    {p.genericBenchmark ? <p className="text-xs text-muted-foreground">No area/type-matched transaction or listing references are shown for this generic benchmark.</p> : <><TransactionReferences property={p} title="Recent Comparable Sales" sourceLabel="DLD transaction reference" /><ListingReferences property={p} title="Similar Properties on the Market" /></>}
     <Button asChild className="w-full"><Link to="/owner/sell">Sell My Property</Link></Button>
   </>;
 }

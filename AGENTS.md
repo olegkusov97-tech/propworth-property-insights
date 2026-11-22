@@ -31,6 +31,7 @@ use the editor.
 
 ## Property prototype
 - Keep the app-wide visual identity in shared CSS tokens and the shared Brand component; page-specific colors must use semantic tokens so all journeys remain consistent.
+- Scope homeowner score color overrides to score and liquidity-history wrappers, and pass optional reference titles so homeowner presentation changes do not restyle Buyer.
 - Render page Back links below the brand-only header; keep Buyer destinations in the tested navigation helper so search returns home and deeper pages return to property search.
 - Keep shared community calculations unchanged; buyer liquidity explorers adapt the browser-safe homeowner property model so both journeys show consistent indicators without altering legacy finance estimates.
 - Normalize extended owner details at the homeowner boundary to retain compatibility with properties created by the buyer journey and older local records.

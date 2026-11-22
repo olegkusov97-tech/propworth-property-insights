@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Final homeowner dashboard refinements
+- [x] Remove duplicated valuation and change-property actions; retain selling as the final action.
+- [x] Align homeowner score colors and rename reference sections without changing Buyer.
+- [x] Move demo monthly updates after monthly changes; verify saved toggle, references and selling on mobile.
 ## Simplified homepage and no selected-property comparisons
 - [x] Shorten homepage title, subtitle and journey descriptions while preserving branding.
 - [x] Remove comparison page, controls, selection state and comparison-only helpers.

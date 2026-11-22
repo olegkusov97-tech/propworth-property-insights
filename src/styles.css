@@ -114,7 +114,16 @@
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
   --shadow-card: 0 2px 8px oklch(0.321 0 0 / 0.035);
+  --liquidity-moderate: oklch(0.49 0.085 190);
+  --liquidity-high: var(--success);
+  --liquidity-low: var(--destructive);
+  --liquidity-benchmark: oklch(0.5 0.055 250);
 }
+
+.owner-score[data-liquidity="Moderate"] { --primary: var(--liquidity-moderate); }
+.owner-score[data-liquidity="High"] { --primary: var(--liquidity-high); }
+.owner-score[data-liquidity="Low"] { --primary: var(--liquidity-low); }
+.owner-score { --accent: var(--liquidity-benchmark); }
 
 @layer base {
   * {
