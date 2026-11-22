@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Property prototype
+- Keep homeowner characteristic-aware mock calculations in a browser-safe property model separate from shared community calculations, so buyer estimates remain unchanged.
+- Normalize extended owner details at the homeowner boundary to retain compatibility with properties created by the buyer journey and older local records.
+- Persist owner setup drafts and confirmed details in separate browser storage keys, so incomplete edits do not overwrite the active property.
