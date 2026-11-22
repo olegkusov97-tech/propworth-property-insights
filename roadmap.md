@@ -1,4 +1,8 @@
 # Homeowner improvements
+## Uploaded listing reference
+- [x] Prepare historical listing references with source dates and missing-size disclosure.
+- [x] Show matching references on buyer and homeowner detail screens without changing liquidity.
+- [x] Test matching and verify the reference panel on mobile.
 ## Uploaded transaction reference
 - [x] Prepare a filtered transaction reference with source provenance and conservative matching.
 - [x] Show uploaded sale references on homeowner and buyer detail pages without changing simulated liquidity.

@@ -10,6 +10,7 @@ import { retainSnapshots, segmentName, type OwnerSnapshot } from "@/lib/owner-hi
 import { LiquidityHistory } from "./liquidity-history";
 import { MarketActivity } from "./market-activity";
 import { TransactionReferences } from "./transaction-references";
+import { ListingReferences } from "./listing-references";
 
 export function PropertyDashboard({ owned, onEdit, onReplace }: {
   owned: OwnedProperty; onChange: (p: PropertyDetails) => void; onEdit: () => void; onReplace: () => void;
@@ -64,6 +65,7 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
     <LiquidityHistory history={snapshots} />
     <Card className="space-y-1"><h2 className="text-xs font-semibold text-muted-foreground">Estimated Value</h2><p className="font-display text-xl font-bold" data-testid="property-value">{aed(r.value)}</p><p className="text-[11px] text-muted-foreground">Indicative range {aed(r.value * .93)}–{aed(r.value * 1.07)}</p><p className="text-xs text-muted-foreground">AED {r.pricePerSqft.toLocaleString()}/sq ft · simulated</p></Card>
     <TransactionReferences property={p} />
+    <ListingReferences property={p} />
     <Card className="flex items-start gap-3 bg-secondary"><Bell className="mt-1 size-5 shrink-0 text-primary" /><div><p className="text-sm font-semibold">Monthly liquidity updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no notifications sent." : "Keep up with demand and liquidity. Demo only."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div></Card>
     <Button variant="link" className="w-full text-muted-foreground" onClick={onReplace}>Change property</Button>
     <Link to="/buyer" className="block text-center text-xs text-primary underline">Thinking of buying another? Open buyer tools</Link>

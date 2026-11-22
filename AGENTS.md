@@ -40,3 +40,4 @@ use the editor.
 - Keep prototype buyer watchlists in a device-local key separate from legacy purchase plans; capture score at save time so tracking can distinguish monthly change from change since saving.
 - Transfer purchased listings into the homeowner review draft, never directly into the active property; confirmation protects any existing home from accidental replacement.
 - Keep uploaded transaction references separate from simulated liquidity inputs; use deduplicated Sale registrations with explicit area/subtype/status/bedroom/size matching and disclose source units assumptions so real references never imply validated predictions.
+- Keep historical listing references separate from the sample catalog and simulated model; match city/area/type/bedrooms/status, preserve asking prices and dates, and never infer unit size from building-area fields because this source cannot establish current availability or size-matched comparables.
