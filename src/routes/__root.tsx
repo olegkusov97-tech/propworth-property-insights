@@ -81,10 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PropWorth — Property Liquidity Intelligence" },
+      { title: "Property Liquidity by Property Finder" },
       { name: "description", content: "Understand how liquid your UAE property is, or what you can afford to buy." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "PropWorth" },
+      { property: "og:title", content: "Property Liquidity by Property Finder" },
       { property: "og:description", content: "Understand how liquid your UAE property is, or what you can afford to buy." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

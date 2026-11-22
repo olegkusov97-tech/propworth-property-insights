@@ -7,9 +7,9 @@ import { getCommunity, liquidityScore, history, aed } from "@/lib/market";
 export const Route = createFileRoute("/buyer/plan")({
   head: () => ({
     meta: [
-      { title: "My Purchase Plan — PropWorth" },
+      { title: "My Purchase Plan — Property Liquidity by Property Finder" },
       { name: "description", content: "Your saved budget and shortlist, with market changes to watch." },
-      { property: "og:title", content: "My Purchase Plan — PropWorth" },
+      { property: "og:title", content: "My Purchase Plan — Property Liquidity by Property Finder" },
       { property: "og:description", content: "Monitor price and liquidity changes in your shortlisted communities." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -9,9 +9,9 @@ import { normalizeProperty } from "@/lib/property";
 export const Route = createFileRoute("/owner")({
   head: () => ({
     meta: [
-      { title: "My Property Liquidity — PropWorth" },
+      { title: "My Property Liquidity — Property Liquidity by Property Finder" },
       { name: "description", content: "Add your Dubai property and review characteristic-aware value, buyer demand, market liquidity and saleability." },
-      { property: "og:title", content: "Homeowner Liquidity Dashboard — PropWorth" },
+      { property: "og:title", content: "Homeowner Liquidity Dashboard — Property Liquidity by Property Finder" },
       { property: "og:description", content: "Understand your home's saleability with comparable properties, market changes and an asking price simulator." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

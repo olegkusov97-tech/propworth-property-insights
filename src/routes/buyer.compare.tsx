@@ -8,9 +8,9 @@ export const Route = createFileRoute("/buyer/compare")({
   validateSearch: (s: Record<string, unknown>): S => ({ ids: String(s["ids"] ?? "jvc,marina"), income: Number(s["income"] ?? 35000), savings: Number(s["savings"] ?? 450000), debts: Number(s["debts"] ?? 0) }),
   head: () => ({
     meta: [
-      { title: "Compare by Liquidity — PropWorth" },
+      { title: "Compare by Liquidity — Property Liquidity by Property Finder" },
       { name: "description", content: "Compare UAE communities on liquidity, demand and future resale ease — not just price." },
-      { property: "og:title", content: "Compare Properties by Liquidity — PropWorth" },
+      { property: "og:title", content: "Compare Properties by Liquidity — Property Liquidity by Property Finder" },
       { property: "og:description", content: "See which homes may be easier to resell in the future." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

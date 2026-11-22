@@ -9,7 +9,7 @@ export function Screen({ title, back, children, tone }: { title: string; back?: 
         <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/90 px-4 py-3 backdrop-blur">
           {back && <Link to={back} aria-label="Back" className="rounded-full p-1.5 hover:bg-muted"><ArrowLeft className="h-5 w-5" /></Link>}
           <div className="flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">PropWorth{tone ? ` · ${tone}` : ""}</p>
+            <p className="text-[11px] font-semibold text-muted-foreground">Property Liquidity by Property Finder{tone ? ` · ${tone}` : ""}</p>
             <h1 className="font-display text-lg font-bold leading-tight">{title}</h1>
           </div>
         </header>

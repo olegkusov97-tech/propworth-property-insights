@@ -8,9 +8,9 @@ import { communities, affordability, liquidityScore, demandIndex, liquidityLabel
 export const Route = createFileRoute("/buyer/")({
   head: () => ({
     meta: [
-      { title: "Buyer Planner — PropWorth" },
+      { title: "Buyer Planner — Property Liquidity by Property Finder" },
       { name: "description", content: "Work out your UAE purchase budget and find communities with the strongest buyer demand." },
-      { property: "og:title", content: "First-time Buyer Planner — PropWorth" },
+      { property: "og:title", content: "First-time Buyer Planner — Property Liquidity by Property Finder" },
       { property: "og:description", content: "Budget, readiness and liquidity-ranked communities for UAE renters ready to buy." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
