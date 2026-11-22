@@ -88,3 +88,8 @@
 - [x] Partition the complete application catalog into JSON files under 5 MB in public/data and combine them through the existing loader without Lovable asset requests.
 - [x] Commit the partitions, verify exact record preservation and test search, filters, Saved, buying and refresh locally.
 - [ ] Verify the updated Vercel deployment and page refresh; no Vercel URL was supplied.
+
+## Portable Property Finder logo
+- [x] Serve the unchanged logo from public/assets through the shared Brand header and commit the file.
+- [x] Verify logo rendering and refresh on all local pages without changing size or layout.
+- [ ] Verify logo rendering on the Vercel deployment; no deployment URL was supplied.

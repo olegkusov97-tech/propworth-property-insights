@@ -30,7 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Property prototype
-- Keep the app-wide visual identity in shared CSS tokens and the shared Brand component; page-specific colors must use semantic tokens so all journeys remain consistent.
+- Keep the app-wide visual identity in shared CSS tokens and the shared Brand component; serve its logo from public/assets with a same-origin static URL for portable deployments, and use semantic tokens for page-specific colors so all journeys remain consistent.
 - Scope homeowner score color overrides to score and liquidity-history wrappers, and pass optional reference titles so homeowner presentation changes do not restyle Buyer.
 - Keep branding, Back and Buyer tabs in one sticky shared header; Back reverses active journey steps before using router history, preserving query-based search state and in-session forms.
 - Keep shared community calculations unchanged; buyer liquidity explorers adapt the browser-safe homeowner property model so both journeys show consistent indicators without altering legacy finance estimates.
