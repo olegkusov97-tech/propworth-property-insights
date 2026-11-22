@@ -93,3 +93,8 @@
 - [x] Serve the unchanged logo from public/assets through the shared Brand header and commit the file.
 - [x] Verify logo rendering and refresh on all local pages without changing size or layout.
 - [ ] Verify logo rendering on the Vercel deployment; no deployment URL was supplied.
+
+## Embedded Buyer market comparison
+- [x] Add a compact chart above property search with area, type and bedroom comparison filters derived from observed supported configurations.
+- [x] Reuse existing segment scoring, keep real DLD references separate and link each segment to matching listings.
+- [x] Test supported configurations and verify all three comparison directions and existing Buyer flows on mobile.

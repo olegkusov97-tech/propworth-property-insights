@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BuyerExplorer } from "@/components/pw/buyer-explorer";
+import { BuyerMarketComparison } from "@/components/pw/buyer-market-comparison";
 import { buyerHead } from "@/components/pw/buyer-shell";
 import { parseBuyerFilters } from "@/lib/buyer-liquidity";
 export const Route = createFileRoute("/buyer/properties")({ validateSearch: (s: Record<string, unknown>): Partial<import("@/lib/buyer-liquidity").BuyerFilters> & { sort?: string; page?: number } => ({ ...parseBuyerFilters(s), sort: typeof s["sort"] === "string" ? s["sort"] : "newest", page: Math.max(1, Math.floor(Number(s["page"]) || 1)) }), head: () => buyerHead("Historical Property Search", "Search the uploaded Bayut property listings using original asking prices and clearly simulated liquidity."), component: Properties });
-function Properties() { const filters = Route.useSearch(); return <BuyerExplorer kind="properties" initialFilters={filters} initialSort={filters.sort ?? "newest"} initialPage={filters.page ?? 1} />; }
+function Properties() { const filters = Route.useSearch(); return <><BuyerMarketComparison /><div id="property-search" className="scroll-mt-40 space-y-4"><BuyerExplorer kind="properties" initialFilters={filters} initialSort={filters.sort ?? "newest"} initialPage={filters.page ?? 1} /></div></>; }
