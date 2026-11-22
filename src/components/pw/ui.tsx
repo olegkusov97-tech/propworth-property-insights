@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Info } from "lucide-react";
 import type { ReactNode } from "react";
 
-export function Screen({ title, back, children, tone }: { title: string; back?: "/" | "/buyer"; children: ReactNode; tone?: string }) {
+export function Screen({ title, back, children, tone }: { title: string; back?: "/" | "/buyer" | "/owner"; children: ReactNode; tone?: string }) {
   return (
     <div className="min-h-screen bg-muted/60">
       <div className="mx-auto min-h-screen max-w-md bg-background pb-10 shadow-card">

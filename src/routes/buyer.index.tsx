@@ -12,6 +12,6 @@ function Buyer() {
       <article className="flex flex-col items-start rounded-2xl border bg-card p-5 shadow-card"><Building2 className="mb-3 size-7 text-accent" /><h2 className="font-display text-xl font-bold">Explore Properties</h2><p className="mt-2 flex-1 text-sm text-muted-foreground">Compare individual homes by liquidity and understand how they stand against similar properties.</p><Button asChild className="mt-4"><Link to="/buyer/properties">Explore Properties <ArrowRight /></Link></Button></article>
     </div>
     <Button asChild variant="outline" className="w-full"><Link to="/buyer/plan"><Bookmark />Saved properties and markets{saved.length ? ` (${saved.length})` : ""}</Link></Button>
-    <p className="text-[11px] text-muted-foreground">Illustrative Dubai data · not a resale prediction or guarantee.</p>
+    <p className="text-[11px] text-muted-foreground">Historical Bayut listings · simulated liquidity and activity · no real buying requests are sent.</p>
   </>;
 }

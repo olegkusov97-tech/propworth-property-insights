@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 export interface OwnedProperty {
+  sourceAddress?: string; sourceArea?: string; sourceCity?: string; sourceType?: string; genericBenchmark?: boolean;
   communityId: string; sizeSqft: number; bedrooms: number; askingPremium: number;
   building?: string; propertyType?: "Apartment" | "Villa" | "Townhouse";
   status?: "Ready" | "Off-plan"; floor?: number | null;

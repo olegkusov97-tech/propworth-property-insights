@@ -27,7 +27,7 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
   }, [loaded, serialized, saved, setSaved]);
   const previous = snapshots.at(-2);
   if (!previous || !current) return null;
-  const segment = segmentName(p, c.name);
+  const segment = p.genericBenchmark ? `Generic demo benchmark · original area ${p.sourceArea ?? "not modeled"}` : segmentName(p, c.name);
   const gap = property.liquidity - market.liquidity;
   const interpretation = gap === 0 ? "Your property has similar liquidity to comparable homes." : `Your property has ${Math.abs(gap) < 10 ? "slightly " : ""}${gap > 0 ? "higher" : "lower"} liquidity than similar homes.`;
   const searchDelta = (market.searches / previous.searches - 1) * 100;
@@ -43,6 +43,8 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
   const prevDemand = previousIndicators.demand;
   const prevCompetition = previousIndicators.competition;
   return <>
+    <Button asChild className="w-full"><Link to="/owner/sell">Sell My Property</Link></Button>
+    {p.genericBenchmark && <p className="text-xs text-muted-foreground">Original listing: {p.sourceAddress} · {p.sourceType}. Analytics use a generic simulated benchmark, not evidence for this local market.</p>}
     <div className="flex items-center justify-between gap-2"><span className="text-xs text-muted-foreground">{p.status} · {p.sizeSqft.toLocaleString()} sq ft</span><Button variant="outline" size="sm" onClick={onEdit}><Pencil /> Edit Property</Button></div>
     <Card className="space-y-3">
       <div className="flex items-center gap-3"><div className="shrink-0"><Gauge value={property.liquidity} label="Liquidity Score" labelClassName="max-w-16 text-center leading-tight" /></div><div className="min-w-0"><h2 className="font-display text-xl font-bold">Property Liquidity</h2><p className="font-semibold text-primary" data-testid="saleability">{r.saleability} Liquidity</p><Change delta={liquidityDelta} unit="pts" /><span className="block text-[10px] text-muted-foreground">vs last month</span></div></div>
@@ -64,8 +66,7 @@ export function PropertyDashboard({ owned, onEdit, onReplace }: {
     <MarketActivity snapshots={snapshots} segment={segment} />
     <LiquidityHistory history={snapshots} />
     <Card className="space-y-1"><h2 className="text-xs font-semibold text-muted-foreground">Estimated Value</h2><p className="font-display text-xl font-bold" data-testid="property-value">{aed(r.value)}</p><p className="text-[11px] text-muted-foreground">Indicative range {aed(r.value * .93)}–{aed(r.value * 1.07)}</p><p className="text-xs text-muted-foreground">AED {r.pricePerSqft.toLocaleString()}/sq ft · simulated</p></Card>
-    <TransactionReferences property={p} />
-    <ListingReferences property={p} />
+    {p.genericBenchmark ? <p className="text-xs text-muted-foreground">No area/type-matched transaction or listing references are shown for this generic benchmark.</p> : <><TransactionReferences property={p} /><ListingReferences property={p} /></>}
     <Card className="flex items-start gap-3 bg-secondary"><Bell className="mt-1 size-5 shrink-0 text-primary" /><div><p className="text-sm font-semibold">Monthly liquidity updates</p><p className="text-xs text-muted-foreground">{alerts ? "Preference saved. Demo only — no notifications sent." : "Keep up with demand and liquidity. Demo only."}</p><Button variant={alerts ? "outline" : "default"} size="sm" className="mt-2" onClick={() => setAlerts(!alerts)}>{alerts ? <BellOff /> : <Bell />}{alerts ? "Turn off alerts" : "Notify me"}</Button></div></Card>
     <Button variant="link" className="w-full text-muted-foreground" onClick={onReplace}>Change property</Button>
     <Link to="/buyer" className="block text-center text-xs text-primary underline">Thinking of buying another? Open buyer tools</Link>

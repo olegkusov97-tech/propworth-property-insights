@@ -31,8 +31,8 @@ function Owner() {
     </Screen>;
   }
   const p = normalizeProperty(owned), c = getCommunity(p.communityId);
-  return <Screen title={`${p.bedrooms === 0 ? "Studio" : `${p.bedrooms}BR`} ${p.propertyType}, ${p.building || c.name}`} back="/" tone="Homeowner">
-    {p.building && <p className="text-xs text-muted-foreground">{c.name}</p>}
+  return <Screen title={p.sourceAddress ?? `${p.bedrooms === 0 ? "Studio" : `${p.bedrooms}BR`} ${p.propertyType}, ${p.building || c.name}`} back="/" tone="Homeowner">
+    {p.building && <p className="text-xs text-muted-foreground">{p.sourceArea ?? c.name}</p>}
     <PropertyDashboard owned={p} onChange={setOwned} onEdit={() => setFlow({ stage: "details", source: "Edit Property", property: p, query: "" })} onReplace={() => setFlow({ ...newPropertyFlow, property: { ...newPropertyFlow.property } })} />
   </Screen>;
 }

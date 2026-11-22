@@ -1,4 +1,10 @@
 # Homeowner improvements
+## Connected research, buying and selling
+- [x] Replace buyer samples with the full historical CSV catalog and paginated search.
+- [x] Separate segment comparisons and add filtered View Properties links.
+- [x] Add simulated viewing/offer requests and safe purchased-property review.
+- [x] Add owner agent-contact and listing-draft demos with optional local photo previews.
+- [x] Verify search, comparison, buying, selling and mobile transitions without changing existing charts.
 ## Uploaded listing reference
 - [x] Prepare historical listing references with source dates and missing-size disclosure.
 - [x] Show matching references on buyer and homeowner detail screens without changing liquidity.
