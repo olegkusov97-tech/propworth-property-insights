@@ -58,6 +58,10 @@
   --color-warning: var(--warning);
   --font-sans: "Open Sans", Arial, sans-serif;
   --font-display: "Open Sans", Arial, sans-serif;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-control: 1rem;
+  --text-control--line-height: 1.5;
   --shadow-card: var(--shadow-card);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -170,3 +174,18 @@
 }
 
 @utility font-display { font-family: var(--font-display); }
+
+/* Keep compact notes legible without flattening the heading hierarchy. */
+:is(.text-\[9px\], .text-\[10px\], .text-\[11px\]):not(svg *) {
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+}
+
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  font-size: var(--text-control);
+  line-height: var(--text-control--line-height);
+}
+
+svg text:is(.text-\[9px\], .text-\[10px\]) {
+  font-size: 11px;
+}
